@@ -552,6 +552,7 @@ const APP = {
   gridOrigin: null,
   gridStep: null,
   worker: null,
+  workerBlobUrl: null,
   workerBusy: false,
   workerQueue: [],
   colorSchemes: [
@@ -1419,6 +1420,7 @@ document.getElementById('file-input').addEventListener('change',e=>{
 });
 
 async function loadFile(file){
+  disposeSession();
   setStatus(`Loading ${file.name}...`);
 
   // Detect format: HDF5 magic bytes = 0x89 H D F \r \n \x1a \n
@@ -1476,6 +1478,7 @@ async function loadFile(file){
 // Identical to the Molden branch of loadFile but accepts a text string directly,
 // bypassing the File API entirely.
 async function loadMoldenText(text, filename){
+  disposeSession();
   setStatus(`Loading ${filename}...`);
   showLoading('Parsing Molden file...', filename);
   document.getElementById('welcome').classList.add('hidden');
@@ -2029,24 +2032,106 @@ function parseMolden(text){
 }
 
 // =====================================================================
+// MEMORY MANAGEMENT
+// =====================================================================
+
+/**
+ * Dispose a single Three.js mesh (or group containing meshes): removes it
+ * from the pivot, disposes geometry, disposes material(s) and their texture
+ * maps, and nulls the _sortPos typed-array reference used by the depth-sort
+ * path.  Safe to call with null / undefined — returns immediately.
+ */
+function disposeMesh(mesh){
+  if(!mesh) return;
+  if(APP.pivot) APP.pivot.remove(mesh);
+  // Recurse into groups
+  if(mesh.isGroup || (mesh.children && mesh.children.length)){
+    // Snapshot children array because dispose calls may mutate it
+    const kids=mesh.children.slice();
+    kids.forEach(child=>disposeMesh(child));
+  }
+  if(mesh.geometry) mesh.geometry.dispose();
+  if(mesh.material){
+    const mats=Array.isArray(mesh.material)?mesh.material:[mesh.material];
+    mats.forEach(m=>{
+      if(!m) return;
+      ['map','normalMap','emissiveMap','alphaMap','envMap'].forEach(slot=>{
+        if(m[slot]) m[slot].dispose();
+      });
+      m.dispose();
+    });
+  }
+  if(mesh._sortPos) mesh._sortPos=null;
+}
+
+/**
+ * Dispose every orbital / density / diff surface currently held in APP.
+ * Resets all six mesh arrays to [] and all six singular references to null.
+ * Safe to call when no surfaces exist yet.
+ */
+function disposeIsosurfaces(){
+  disposeMesh(APP.orbMeshPos);  APP.orbMeshPos=null;
+  disposeMesh(APP.orbMeshNeg);  APP.orbMeshNeg=null;
+  (APP.orbMeshes||[]).forEach(disposeMesh); APP.orbMeshes=[];
+  disposeMesh(APP.sortedOrbMesh); APP.sortedOrbMesh=null;
+
+  disposeMesh(APP.densMesh);    APP.densMesh=null;
+  (APP.densMeshes||[]).forEach(disposeMesh); APP.densMeshes=[];
+  disposeMesh(APP.sortedDensMesh); APP.sortedDensMesh=null;
+
+  disposeMesh(APP.diffMeshPos); APP.diffMeshPos=null;
+  disposeMesh(APP.diffMeshNeg); APP.diffMeshNeg=null;
+  (APP.diffMeshes||[]).forEach(disposeMesh); APP.diffMeshes=[];
+  disposeMesh(APP.sortedDiffMesh); APP.sortedDiffMesh=null;
+}
+
+/**
+ * Full session teardown — must be the first call in every file-load entry
+ * point.  Disposes all GPU resources, clears all large CPU-side arrays, and
+ * resets molecular state so the new file starts with a clean heap.
+ */
+function disposeSession(){
+  // 1. Isosurface meshes (orbitals, density, diff)
+  disposeIsosurfaces();
+
+  // 2. Atom meshes
+  (APP.atomMeshes||[]).forEach(disposeMesh);
+  APP.atomMeshes=[];
+
+  // 3. Bond groups — traverse each group to dispose all descendant geometry/material
+  Object.values(APP.bMeshes||{}).forEach(g=>{
+    if(!g) return;
+    g.traverse(obj=>{
+      if(obj.geometry) obj.geometry.dispose();
+      if(obj.material){
+        const mats=Array.isArray(obj.material)?obj.material:[obj.material];
+        mats.forEach(m=>{if(m) m.dispose();});
+      }
+    });
+    if(APP.pivot) APP.pivot.remove(g);
+  });
+  APP.bMeshes={};
+  APP.bondHitMeshes=[];
+
+  // 4. Molecular data
+  APP.mol=null;
+
+  // 5. Cached volumetric grids
+  APP.moGrids={};
+  APP.densGrids={};
+}
+
+// =====================================================================
 // SCENE BUILDING
 // =====================================================================
 function buildScene(){
   // Ensure pivot exists (created in initTrackball, but guard just in case)
   if(!APP.pivot){ APP.pivot=new THREE.Group(); APP.scene.add(APP.pivot); }
 
-  // Clear old objects
-  APP.atomMeshes.forEach(m=>APP.pivot.remove(m));
-  Object.values(APP.bMeshes).forEach(g=>APP.pivot.remove(g));
-  APP.atomMeshes=[];
-  APP.bMeshes={};
-  APP.bondHitMeshes=[];
-  if(APP.orbMeshPos){APP.pivot.remove(APP.orbMeshPos);APP.orbMeshPos=null;}
-  if(APP.orbMeshNeg){APP.pivot.remove(APP.orbMeshNeg);APP.orbMeshNeg=null;}
-  APP.orbMeshes.forEach(m=>{if(m)APP.pivot.remove(m)}); APP.orbMeshes=[];
-  if(APP.densMesh){APP.pivot.remove(APP.densMesh);APP.densMesh=null;}
-  if(APP.diffMeshPos){APP.pivot.remove(APP.diffMeshPos);APP.diffMeshPos=null;}
-  if(APP.diffMeshNeg){APP.pivot.remove(APP.diffMeshNeg);APP.diffMeshNeg=null;}
+  // disposeSession() has already cleared meshes and APP.mol before loadFile
+  // calls buildScene(); this guard handles any residual state from a rebuild
+  // triggered within the same session (e.g. settings changes).
+  disposeIsosurfaces();
 
   // Reset pivot transform for new molecule
   APP.pivot.quaternion.set(0,0,0,1);
@@ -3692,8 +3777,10 @@ self.onmessage=function(e){
 
 function initWorker(){
   if(APP.worker)APP.worker.terminate();
+  if(APP.workerBlobUrl){URL.revokeObjectURL(APP.workerBlobUrl);APP.workerBlobUrl=null;}
   const blob=new Blob([WORKER_CODE],{type:'application/javascript'});
-  APP.worker=new Worker(URL.createObjectURL(blob));
+  APP.workerBlobUrl=URL.createObjectURL(blob);
+  APP.worker=new Worker(APP.workerBlobUrl);
   APP.moGrids={};
   APP.densGrids={};
   APP.workerBusy=false;
@@ -4030,12 +4117,8 @@ function makeComponentMeshes(vertsBuffer, normsBuffer, sizesBuffer, color, opaci
 }
 
 function renderOrbitalFromData(posVerts,posNorms,posSizes,negVerts,negNorms,negSizes){
+  disposeIsosurfaces();
   const scheme=APP.colorSchemes[APP.activeScheme];
-
-  if(APP.orbMeshPos){APP.pivot.remove(APP.orbMeshPos);APP.orbMeshPos=null;}
-  if(APP.orbMeshNeg){APP.pivot.remove(APP.orbMeshNeg);APP.orbMeshNeg=null;}
-  APP.orbMeshes.forEach(m=>{if(m)APP.pivot.remove(m)}); APP.orbMeshes=[];
-  if(APP.sortedOrbMesh){APP.pivot.remove(APP.sortedOrbMesh);APP.sortedOrbMesh=null;}
 
   APP.orbMeshPos=makeComponentMeshes(posVerts,posNorms,posSizes,scheme.pos,APP.orbOpacity,APP.orbMeshes,10);
   APP.orbMeshNeg=makeComponentMeshes(negVerts,negNorms,negSizes,scheme.neg,APP.orbOpacity,APP.orbMeshes,10);
@@ -4055,17 +4138,17 @@ function updateOrbOpacity(){
   const wasOpaque=prev>=0.99;
 
   if(isOpaque&&!wasOpaque){
-    // Transparent → opaque: remove sorted mesh, show component meshes
-    if(APP.sortedOrbMesh){APP.pivot.remove(APP.sortedOrbMesh);APP.sortedOrbMesh=null;}
+    // Transparent → opaque: dispose sorted mesh, show component meshes directly
+    disposeMesh(APP.sortedOrbMesh); APP.sortedOrbMesh=null;
     APP.orbMeshes.forEach(m=>{
       if(!m||!m.material)return;
       m.visible=true; m.material.opacity=1; m.material.transparent=false;
       m.material.depthWrite=true; m.renderOrder=2; m.material.needsUpdate=true;
     });
   }else if(!isOpaque&&wasOpaque){
-    // Opaque → transparent: build sorted mesh, hide component meshes
+    // Opaque → transparent: hide component meshes, build sorted mesh
     APP.orbMeshes.forEach(m=>{if(m)m.visible=false;});
-    if(APP.sortedOrbMesh){APP.pivot.remove(APP.sortedOrbMesh);APP.sortedOrbMesh=null;}
+    disposeMesh(APP.sortedOrbMesh); APP.sortedOrbMesh=null;
     APP.sortedOrbMesh=buildSortedMesh(APP.orbMeshes,APP.orbOpacity,10);
   }else if(!isOpaque){
     // Both transparent: just update opacity of sorted mesh
@@ -4341,9 +4424,7 @@ function renderDensity(){
 }
 
 function renderDensityFromData(verts, norms, sizes){
-  if(APP.densMesh){APP.pivot.remove(APP.densMesh);APP.densMesh=null;}
-  if(APP.densMeshes){APP.densMeshes.forEach(m=>APP.pivot.remove(m));} APP.densMeshes=[];
-  if(APP.sortedDensMesh){APP.pivot.remove(APP.sortedDensMesh);APP.sortedDensMesh=null;}
+  disposeIsosurfaces();
 
   makeComponentMeshes(verts,norms,sizes,'#44aaff',APP.densOpacity,APP.densMeshes,15);
   APP.densMesh=APP.densMeshes[0]||null;
@@ -4361,15 +4442,17 @@ function updateDensOpacity(){
   const wasOpaque=prev>=0.99;
 
   if(isOpaque&&!wasOpaque){
-    if(APP.sortedDensMesh){APP.pivot.remove(APP.sortedDensMesh);APP.sortedDensMesh=null;}
+    // Transparent → opaque: dispose sorted mesh, show component meshes directly
+    disposeMesh(APP.sortedDensMesh); APP.sortedDensMesh=null;
     (APP.densMeshes||[]).forEach(m=>{
       if(!m||!m.material)return;
       m.visible=true; m.material.opacity=1; m.material.transparent=false;
       m.material.depthWrite=true; m.renderOrder=2; m.material.needsUpdate=true;
     });
   }else if(!isOpaque&&wasOpaque){
+    // Opaque → transparent: hide component meshes, build sorted mesh
     (APP.densMeshes||[]).forEach(m=>{if(m)m.visible=false;});
-    if(APP.sortedDensMesh){APP.pivot.remove(APP.sortedDensMesh);APP.sortedDensMesh=null;}
+    disposeMesh(APP.sortedDensMesh); APP.sortedDensMesh=null;
     APP.sortedDensMesh=buildSortedMesh(APP.densMeshes,APP.densOpacity,15);
   }else if(!isOpaque){
     if(APP.sortedDensMesh){APP.sortedDensMesh.material.opacity=APP.densOpacity;}
@@ -4460,10 +4543,7 @@ function renderDiff(){
 }
 
 function renderDiffFromData(posVerts,posNorms,posSizes,negVerts,negNorms,negSizes){
-  if(APP.diffMeshPos){APP.pivot.remove(APP.diffMeshPos);APP.diffMeshPos=null;}
-  if(APP.diffMeshNeg){APP.pivot.remove(APP.diffMeshNeg);APP.diffMeshNeg=null;}
-  if(APP.diffMeshes){APP.diffMeshes.forEach(m=>APP.pivot.remove(m));} APP.diffMeshes=[];
-  if(APP.sortedDiffMesh){APP.pivot.remove(APP.sortedDiffMesh);APP.sortedDiffMesh=null;}
+  disposeIsosurfaces();
 
   APP.diffMeshPos=makeComponentMeshes(posVerts,posNorms,posSizes,'#2255ff',APP.diffOpacity,APP.diffMeshes,20);
   APP.diffMeshNeg=makeComponentMeshes(negVerts,negNorms,negSizes,'#ff2222',APP.diffOpacity,APP.diffMeshes,20);
@@ -4483,8 +4563,8 @@ function updateDiffOpacity(){
   const wasOpaque=prev>=0.99;
 
   if(isOpaque&&!wasOpaque){
-    // Transparent → opaque: remove sorted mesh, show component meshes directly
-    if(APP.sortedDiffMesh){APP.pivot.remove(APP.sortedDiffMesh);APP.sortedDiffMesh=null;}
+    // Transparent → opaque: dispose sorted mesh, show component meshes directly
+    disposeMesh(APP.sortedDiffMesh); APP.sortedDiffMesh=null;
     (APP.diffMeshes||[]).forEach(m=>{
       if(!m||!m.material)return;
       m.visible=true; m.material.opacity=1; m.material.transparent=false;
@@ -4493,7 +4573,7 @@ function updateDiffOpacity(){
   }else if(!isOpaque&&wasOpaque){
     // Opaque → transparent: hide component meshes, build sorted mesh
     (APP.diffMeshes||[]).forEach(m=>{if(m)m.visible=false;});
-    if(APP.sortedDiffMesh){APP.pivot.remove(APP.sortedDiffMesh);APP.sortedDiffMesh=null;}
+    disposeMesh(APP.sortedDiffMesh); APP.sortedDiffMesh=null;
     APP.sortedDiffMesh=buildSortedMesh(APP.diffMeshes,APP.diffOpacity,20);
   }else if(!isOpaque){
     // Still transparent: just update opacity on sorted mesh
