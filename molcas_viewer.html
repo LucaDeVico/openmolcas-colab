@@ -370,9 +370,18 @@ select{background:var(--panel2);border:1px solid var(--border);color:var(--txt);
       <div class="psect">
         <div class="psect-title" onclick="toggleSect(this)">MOLECULAR ORBITALS <span>▼</span></div>
         <div class="psect-body">
-          <label class="toggle" style="margin-bottom:4px">
-            <input type="checkbox" id="show-orbital" onchange="toggleOrbital()"> Show orbital
-          </label>
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:4px;flex-wrap:wrap">
+            <label class="toggle" style="margin-bottom:0">
+              <input type="checkbox" id="show-orbital" onchange="toggleOrbital()"> Show orbital
+            </label>
+            <span style="display:inline-flex;align-items:center;gap:4px">
+              <label class="toggle" style="margin-bottom:0">
+                <input type="checkbox" id="rydberg-mode" onchange="onRydbergModeChange()"> Diffuse / Rydberg
+              </label>
+              <span title="Enlarges the grid to capture diffuse lobes (e.g. Rydberg orbitals on a ghost/dummy centre) and unlocks lower contour values. Computation and rendering will be noticeably slower while this is on."
+                    style="display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;border:1px solid var(--text2);color:var(--text2);font-size:9px;font-style:italic;font-family:Georgia,serif;cursor:help;flex-shrink:0">i</span>
+            </span>
+          </div>
           <div class="row">
             <label>Contour (|ψ|)</label>
             <input type="range" id="contour" min="0.01" max="0.3" step="0.005" value="0.05" oninput="updateContour()">
@@ -578,6 +587,9 @@ const APP = {
   densQuality: 'fast',
   diffQuality: 'fast',
   contour: 0.05,
+  rydbergMode: false,        // Diffuse/Rydberg orbital mode — enlarges grid margin
+  rydbergMarginBohr: 5.0,    // computed margin (Bohr) when rydbergMode is on
+  rydbergMarginComputed: false, // becomes true once computeRydbergMargin() has run for APP.mol
   shininess: 40,
   specular: 80,
   animFrame: null,
@@ -1540,6 +1552,7 @@ async function parseMolcasHDF5(h5){
     mol.atoms.push({
       element:AN2EL[znum]||('Z'+znum),
       atnum:znum,
+      isGhost:znum===0,   // CENTER_ATNUMS===0 is the definitive ghost-atom flag (HDF5 path)
       px:coordsRaw?Number(coordsRaw[i*3+0]):0,
       py:coordsRaw?Number(coordsRaw[i*3+1]):0,
       pz:coordsRaw?Number(coordsRaw[i*3+2]):0,
@@ -1772,6 +1785,7 @@ function parseMolden(text){
     mol.atoms.push({
       element:Z===0?'X':el,
       atnum:Z,
+      isGhost:Z===0,   // atomic_number===0 is the definitive ghost-atom flag (matches HDF5 path)
       // Coordinates always stored in Bohr (px/py/pz matches parseMolcasHDF5 convention)
       px:parseFloat(parts[3])*toBohr,
       py:parseFloat(parts[4])*toBohr,
@@ -2119,6 +2133,22 @@ function disposeSession(){
   // 5. Cached volumetric grids
   APP.moGrids={};
   APP.densGrids={};
+  APP.gridParams=null;
+
+  // 6. Rydberg/diffuse mode is per-file (margin depends on the loaded basis set) —
+  // reset it along with the contour slider so a new molecule starts from the
+  // standard, fast-rendering defaults rather than silently inheriting the
+  // previous file's enlarged grid and lowered contour floor.
+  APP.rydbergMode=false;
+  APP.rydbergMarginComputed=false;
+  APP.rydbergMarginBohr=5.0;
+  const rydChk=document.getElementById('rydberg-mode');
+  if(rydChk) rydChk.checked=false;
+  const contourEl=document.getElementById('contour');
+  if(contourEl){
+    contourEl.min='0.01';
+    contourEl.step='0.005';
+  }
 }
 
 // =====================================================================
@@ -2282,8 +2312,10 @@ function detectBonds(mol, options = {}){
   } = options;
   const bonds = [];
   for(let a = 0; a < atoms.length - 1; a++){
+    if(atoms[a].isGhost) continue; // ghost/dummy centers never bond
     for(let b = a + 1; b < atoms.length; b++){
       const ai = atoms[a], bi = atoms[b];
+      if(bi.isGhost) continue; // ghost/dummy centers never bond
       const dx = (ai.px - bi.px)*BOHR2ANG;
       const dy = (ai.py - bi.py)*BOHR2ANG;
       const dz = (ai.pz - bi.pz)*BOHR2ANG;
@@ -3895,16 +3927,117 @@ function initWorker(){
   });
 }
 
+// =====================================================================
+// RYDBERG / DIFFUSE-ORBITAL GRID SIZING
+// =====================================================================
+// Estimates how far (Bohr) the evaluation grid must extend beyond the atom
+// bounding box to enclose the most diffuse basis function in the loaded
+// file — typically a Rydberg-type shell on a ghost/dummy centre placed at
+// the centre of charge. This is a SIZING HEURISTIC only: it duplicates a
+// minimal copy of the worker's gtoNorm() so the box-size estimate tracks
+// the actual rendered amplitude. If gtoNorm() inside WORKER_CODE is ever
+// revised (e.g. the pending d-shell m-dependent normalization fix noted
+// in molcas_viewer_summary.md §9), mirror the change here too. The angular
+// part is approximated by r^l (the leading-order envelope along the
+// function's dominant axis) rather than the full solidHarmonic() table —
+// sufficient for sizing the box; the worker remains the sole source of
+// truth for the rendered isosurface itself.
+function gtoNormForSizing(alpha,l,m){
+  const p=Math.PI;
+  const base=Math.pow(2.0,l+0.75)*Math.pow(alpha,l*0.5+0.75)/Math.pow(p,0.75);
+  if(l===0||l===1) return base;
+  if(l===2) return m===0 ? base/Math.sqrt(3.0) : base;
+  if(l===3){
+    let K; if(m===0)K=15; else if(m===1||m===-1)K=10; else if(m===2)K=4; else if(m===-2)K=1; else K=6;
+    return base/Math.sqrt(K);
+  }
+  if(l===4){
+    let K; if(m===0)K=105; else if(m===1||m===-1)K=168; else if(m===2)K=336; else if(m===-2)K=84;
+    else if(m===3||m===-3)K=24; else if(m===4)K=192; else K=12;
+    return base/Math.sqrt(K);
+  }
+  return 1.0;
+}
+
+const RYDBERG_TARGET_FRACTION = 0.5;    // probe target = half of RYDBERG_CONTOUR_FLOOR
+const RYDBERG_CONTOUR_FLOOR   = 0.0001; // matches the extended contour slider minimum
+const RYDBERG_SAFETY_FACTOR   = 1.15;
+const RYDBERG_MARGIN_MIN      = 5.0;    // never smaller than the standard margin
+const RYDBERG_MARGIN_MAX      = 60.0;   // hard cap regardless of basis diffuseness
+const N_CAP_FAST          = 42, N_CAP_FAST_RYDBERG = 64;
+const N_CAP_HIGH          = 60, N_CAP_HIGH_RYDBERG = 80;
+
+function computeRydbergMargin(){
+  const mol=APP.mol;
+  if(!mol||!mol.basisFunctions||!mol.basisFunctions.length) return RYDBERG_MARGIN_MIN;
+
+  // Find the basis function holding the single most diffuse primitive
+  // anywhere in the molecule (ghost-centred Rydberg shells included).
+  let bestBf=null, minAlpha=Infinity;
+  mol.basisFunctions.forEach(bf=>{
+    if(!bf.primitives)return;
+    bf.primitives.forEach(prim=>{
+      if(prim.alpha<minAlpha){minAlpha=prim.alpha; bestBf=bf;}
+    });
+  });
+  if(!bestBf) return RYDBERG_MARGIN_MIN;
+
+  const l=bestBf.l, m=bestBf.m, prims=bestBf.primitives;
+
+  function chiAtR(r){
+    let total=0;
+    for(let k=0;k<prims.length;k++){
+      const a=prims[k].alpha, c=prims[k].coeff;
+      total += c*gtoNormForSizing(a,l,m)*Math.pow(r,l)*Math.exp(-a*r*r);
+    }
+    return Math.abs(total);
+  }
+
+  // Coarse scan to locate the peak — diffuse shells peak well away from r=0.
+  let rPeak=0, peakVal=chiAtR(0);
+  for(let r=0;r<=80;r+=0.25){
+    const v=chiAtR(r);
+    if(v>peakVal){peakVal=v; rPeak=r;}
+  }
+
+  const target=RYDBERG_CONTOUR_FLOOR*RYDBERG_TARGET_FRACTION;
+  if(peakVal<=target) return RYDBERG_MARGIN_MIN;
+
+  // Bisect outward from the peak for where the envelope drops below target.
+  let lo=rPeak, hi=Math.max(rPeak,1);
+  while(chiAtR(hi)>target && hi<200) hi+=5;
+  for(let iter=0;iter<40;iter++){
+    const mid=0.5*(lo+hi);
+    if(chiAtR(mid)>target) lo=mid; else hi=mid;
+  }
+
+  const margin=hi*RYDBERG_SAFETY_FACTOR;
+  return Math.min(RYDBERG_MARGIN_MAX, Math.max(RYDBERG_MARGIN_MIN, margin));
+}
+
+function getRydbergMargin(){
+  if(!APP.rydbergMarginComputed){
+    APP.rydbergMarginBohr=computeRydbergMargin();
+    APP.rydbergMarginComputed=true;
+    if(APP.rydbergMarginBohr>=RYDBERG_MARGIN_MAX-0.01){
+      notify(`Diffuse basis exceeds the safety cap — grid margin clamped to ${RYDBERG_MARGIN_MAX} Bohr; the outermost lobe wings may still be cut.`,'err',6000);
+    }
+  }
+  return APP.rydbergMarginBohr;
+}
+
 function computeGridParams(){
   const mol=APP.mol;
   const mode=document.getElementById('grid-size').value;
-  
+  const rydberg=APP.rydbergMode;
+
   let N;
   if(mode==='fast'){
     const nbas=mol.nbas||30;
-    N=Math.max(28, Math.min(42, Math.round(22 + nbas*0.13)));
+    const cap=rydberg?N_CAP_FAST_RYDBERG:N_CAP_FAST;
+    N=Math.max(28, Math.min(cap, Math.round(22 + nbas*0.13)));
   }else{
-    N=60;
+    N=rydberg?N_CAP_HIGH_RYDBERG:N_CAP_HIGH;
   }
   APP.gridN=N;
   APP.gridQuality=mode;
@@ -3915,7 +4048,7 @@ function computeGridParams(){
     ymin=Math.min(ymin,a.py);ymax=Math.max(ymax,a.py);
     zmin=Math.min(zmin,a.pz);zmax=Math.max(zmax,a.pz);
   });
-  const margin=5.0;
+  const margin=rydberg?getRydbergMargin():5.0;
   const ox=xmin-margin,oy=ymin-margin,oz=zmin-margin;
   const ex=xmax+margin,ey=ymax+margin,ez=zmax+margin;
   const sx=(ex-ox)/(N-1),sy=(ey-oy)/(N-1),sz=(ez-oz)/(N-1);
@@ -3929,12 +4062,14 @@ function computeGridParams(){
 // Fast: same auto-N as orbital fast mode. High: N=60 (same as orbital HQ).
 function computeGridParamsForQuality(quality){
   const mol=APP.mol;
+  const rydberg=APP.rydbergMode;
   let N;
   if(quality==='high'){
-    N=60;
+    N=rydberg?N_CAP_HIGH_RYDBERG:N_CAP_HIGH;
   }else{
     const nbas=mol.nbas||30;
-    N=Math.max(28,Math.min(42,Math.round(22+nbas*0.13)));
+    const cap=rydberg?N_CAP_FAST_RYDBERG:N_CAP_FAST;
+    N=Math.max(28,Math.min(cap,Math.round(22+nbas*0.13)));
   }
   let xmin=Infinity,xmax=-Infinity,ymin=Infinity,ymax=-Infinity,zmin=Infinity,zmax=-Infinity;
   mol.atoms.forEach(a=>{
@@ -3942,7 +4077,7 @@ function computeGridParamsForQuality(quality){
     ymin=Math.min(ymin,a.py);ymax=Math.max(ymax,a.py);
     zmin=Math.min(zmin,a.pz);zmax=Math.max(zmax,a.pz);
   });
-  const margin=5.0;
+  const margin=rydberg?getRydbergMargin():5.0;
   const ox=xmin-margin,oy=ymin-margin,oz=zmin-margin;
   const ex=xmax+margin,ey=ymax+margin,ez=zmax+margin;
   const sx=(ex-ox)/(N-1),sy=(ey-oy)/(N-1),sz=(ez-oz)/(N-1);
@@ -4282,7 +4417,8 @@ function sortOrbitalMeshes(){
 
 function updateContour(){
   APP.contour=parseFloat(document.getElementById('contour').value);
-  document.getElementById('contour-val').textContent=APP.contour.toFixed(3);
+  const v=APP.contour;
+  document.getElementById('contour-val').textContent = v<0.001 ? v.toFixed(5) : v.toFixed(3);
   if(document.getElementById('show-orbital').checked&&APP.currentMO>=0){
     renderMO(APP.currentMO);
   }
@@ -4308,6 +4444,35 @@ function onGridSizeChange(){
   // Use initWorker() — it terminates the old worker cleanly, resets all queue/busy
   // state, creates a fresh worker, and sends INIT. This avoids race conditions
   // from the old approach of sending INIT directly to a possibly-busy worker.
+  if(APP.mol) initWorker();
+}
+
+function onRydbergModeChange(){
+  APP.rydbergMode=document.getElementById('rydberg-mode').checked;
+  // Box size and/or grid resolution changed — every cached MO/AO grid is stale.
+  APP.gridParams=null;
+
+  const contourEl=document.getElementById('contour');
+  if(APP.rydbergMode){
+    contourEl.min='0.0001';
+    contourEl.step='0.0001';
+    notify('Diffuse/Rydberg mode enabled — grid recompute will take longer','ok',5000);
+  }else{
+    contourEl.min='0.01';
+    contourEl.step='0.005';
+    if(parseFloat(contourEl.value)<0.01){
+      contourEl.value='0.01';
+      APP.contour=0.01;
+      document.getElementById('contour-val').textContent='0.010';
+    }
+    notify('Diffuse/Rydberg mode disabled','ok',2500);
+  }
+
+  if(APP.currentMO>=0 && document.getElementById('show-orbital').checked){
+    APP.pendingRender={moIdx:APP.currentMO};
+  }
+  // Same clean-restart pattern as onGridSizeChange(): terminates the old worker,
+  // clears APP.moGrids/APP.densGrids, and re-sends INIT + AO recomputation.
   if(APP.mol) initWorker();
 }
 
@@ -4703,6 +4868,7 @@ function saveState(){
     diffOpacity:APP.diffOpacity,
     activeScheme:APP.activeScheme,
     gridN:APP.gridN,
+    rydbergMode:APP.rydbergMode,
     currentMO:APP.currentMO,
     currentState:APP.currentState,
     bondData:APP.bondData,
@@ -4741,6 +4907,22 @@ function applyState(state){
   if(state.bondRadius)APP.bondRadius=state.bondRadius;
   if(state.shininess)APP.shininess=state.shininess;
   if(state.specular)APP.specular=state.specular;
+
+  // Rydberg mode must be restored BEFORE the contour value is applied below,
+  // since the slider's min/step need widening first or the browser will clamp
+  // a saved sub-0.01 contour value back up to 0.01. Cached grids are stale
+  // once the box margin changes, so invalidate and let initWorker() rebuild.
+  if(state.rydbergMode){
+    APP.rydbergMode=true;
+    APP.rydbergMarginComputed=false;
+    const contourEl=document.getElementById('contour');
+    if(contourEl){contourEl.min='0.0001';contourEl.step='0.0001';}
+    const rydChk=document.getElementById('rydberg-mode');
+    if(rydChk)rydChk.checked=true;
+    APP.gridParams=null;
+    if(APP.mol) initWorker();
+  }
+
   if(state.contour)APP.contour=state.contour;
   if(state.densContour!=null)APP.densContour=state.densContour;
   if(state.diffContour!=null)APP.diffContour=state.diffContour;
@@ -4776,7 +4958,7 @@ function applyState(state){
   document.getElementById('shininess-val').textContent=state.shininess||40;
   document.getElementById('specular-val').textContent=state.specular||80;
   document.getElementById('ambient-val').textContent=state.ambientLight||30;
-  document.getElementById('contour-val').textContent=(state.contour||0.05).toFixed(3);
+  document.getElementById('contour-val').textContent=((state.contour||0.05)<0.001 ? (state.contour||0.05).toFixed(5) : (state.contour||0.05).toFixed(3));
   if(document.getElementById('dens-contour-val')) document.getElementById('dens-contour-val').textContent=(state.densContour||0.004).toFixed(4);
   if(document.getElementById('diff-contour-val')) document.getElementById('diff-contour-val').textContent=(state.diffContour||0.002).toFixed(4);
   if(document.getElementById('tess-level-val')) document.getElementById('tess-level-val').textContent=(state.tessLevel||1);
