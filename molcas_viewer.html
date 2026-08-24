@@ -1,12 +1,74 @@
 <!DOCTYPE html>
+<!--
+  OPAL — OpenMolcas Orbitals, Plotting, Analysis and Layout
+  OrbViz — OpenMolcas HDF5 / Molden Orbital and Density Viewer
+
+  Copyright (C) 2025–2026 Luca De Vico
+  Università degli Studi di Siena
+
+  This file is part of OPAL.
+
+  OPAL is free software: you can redistribute it and/or modify it under
+  the terms of the GNU Lesser General Public License as published by the
+  Free Software Foundation, either version 2.1 of the License, or
+  (at your option) any later version.
+
+  OPAL is distributed in the hope that it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+  License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with OPAL. If not, see <https://www.gnu.org/licenses/>.
+-->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Molcas HDF5 Viewer</title>
+<title>OrbViz · OpenMolcas OPAL</title>
+<meta name="description" content="OpenMolcas OPAL — Orbitals, Plotting, Analysis and Layout">
+<link rel="icon" type="image/png" href="data:image/png;base64,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">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--sans);background:var(--bg);color:#e0e0f0;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* D1 (v0.59) — iOS long-press suppression. SUPERSEDES the per-element
+   user-select rules added at v0.58, which were DEVICE-DISPROVED: long-pressing
+   the toolbar and the panel section titles still produced a blue selection oval
+   and the Copy/Look-Up callout on iPad.
+
+   Two independent reasons v0.58 was insufficient, both needed fixing:
+   1. user-select:none suppresses TEXT SELECTION only. The long-press callout
+      menu and the magnifier are governed SEPARATELY by -webkit-touch-callout,
+      which the tool did not set anywhere. Selection and callout are not the
+      same switch on iOS.
+   2. The rules were scoped to .btn and .psect-title, but a long-press lands on
+      whatever is under the finger — the toolbar .logo, the version badge, panel
+      labels, table cells. Suppressing selection on the button while leaving the
+      text 4px away selectable is not a fix; iOS simply selects the neighbour.
+
+   Applied to the chrome CONTAINERS instead, with a deliberate opt-in below.
+   ⚠ **v0.59a — TWO OF THESE SELECTORS MATCHED NOTHING AND THE CSS FAILED
+   SILENTLY.** The first draft listed `#panel` and `.atom-table`. Neither exists:
+   the panels are `#left-panel` and `#right-panel`, and the atom table carries no
+   such class. CSS does not warn on a selector that matches nothing, so the rule
+   looked correct in the file and covered roughly half the chrome on device —
+   toolbar and section titles clean (real selectors), panel BODIES still
+   selectable (dead selector). Held by an assertion in the harness profile that
+   resolves every selector in this list against the DOM. ⚠ Do not add a selector
+   here without adding it there. */
+#toolbar, #left-panel, #right-panel, #modal, #notif, .psect-title, .psect-body, table{
+  -webkit-touch-callout:none;
+  -webkit-user-select:none;
+  user-select:none;
+}
+/* Opt-IN for anything a user has a legitimate reason to copy. Text inputs need
+   selection to be usable at all, so they are never suppressed. */
+#modal-body, .selectable, input[type="text"], input[type="search"], textarea{
+  -webkit-touch-callout:default;
+  -webkit-user-select:text;
+  user-select:text;
+}
 :root{
   --bg:      #12172a;
   --panel:   #16213e;
@@ -29,6 +91,21 @@ body{font-family:var(--sans);background:var(--bg);color:#e0e0f0;height:100vh;dis
 }
 #toolbar{display:flex;align-items:center;gap:8px;padding:4px 12px;min-height:44px;height:auto;
   flex-wrap:wrap;row-gap:4px;background:var(--panel);border-bottom:1px solid var(--border);flex-shrink:0;z-index:10}
+#toolbar img{height:28px;width:auto;opacity:.9;flex-shrink:0;margin-right:4px}
+#ver-badge{
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.06em;
+  color:var(--accent);
+  background:color-mix(in srgb,var(--accent) 15%,transparent);
+  border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);
+  border-radius:4px;
+  padding:1px 5px;
+  margin-right:6px;
+  white-space:nowrap;
+  -webkit-user-select:none;
+  user-select:none;
+}
 @media(max-width:900px){.btn-label{display:none}#toolbar{gap:4px;padding:4px 6px}}
 @media(max-width:540px){.btn{padding:5px 7px}#toolbar{gap:3px;padding:3px 4px}}
 .logo{font-family:var(--mono);font-weight:600;font-size:15px;color:var(--accent);letter-spacing:.05em;margin-right:6px;white-space:nowrap}
@@ -62,7 +139,8 @@ body{font-family:var(--sans);background:var(--bg);color:#e0e0f0;height:100vh;dis
 .psect-title{background:var(--panel2);padding:6px 10px;
   font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.08em;
   text-transform:uppercase;color:var(--txt3);cursor:pointer;
-  display:flex;justify-content:space-between;align-items:center;user-select:none}
+  display:flex;justify-content:space-between;align-items:center;
+  -webkit-user-select:none;user-select:none}
 .psect-title:hover{filter:brightness(1.15)}
 .psect-body{padding:8px 10px;display:flex;flex-direction:column;gap:6px}
 .psect-body.collapsed{display:none}
@@ -91,7 +169,30 @@ select{background:var(--panel2);border:1px solid var(--border);color:var(--txt);
 #atom-table td{padding:2px 5px;border-bottom:1px solid var(--border)}
 #atom-table tr:hover td{background:var(--panel2)}
 #atom-table td.el{font-weight:700}
-.atom-color-swatch{width:16px;height:16px;border-radius:50%;border:1px solid #333;cursor:pointer;display:inline-block}
+/* v0.59 — was a 16px <span> that opened a DETACHED <input type="color"> via a
+   programmatic .click(). On iPad that did NOTHING AT ALL (device-confirmed).
+   Two independent causes, so both are fixed here:
+     1. iOS Safari does not open the colour picker for an input that is not in
+        the document. (⚠ Note this does NOT generalise: loadState() clicks a
+        detached type="file" input and that DOES work on iOS. The colour
+        control behaves differently — do not "simplify" either one to match
+        the other.)
+     2. 16px is far below the 44px iOS minimum tap target, so the tap was
+        unlikely to register even had the picker been reachable.
+   Now a REAL input[type=color] in the DOM: the picker opens from the user's
+   own gesture, with no synthetic click anywhere. The swatch keeps its round
+   appearance; the 44px tap target comes from the padded cell around it. */
+.atom-color-swatch{
+  width:26px;height:26px;padding:0;border-radius:50%;border:1px solid #333;
+  cursor:pointer;display:inline-block;background:none;-webkit-appearance:none;
+  appearance:none;vertical-align:middle;
+}
+.atom-color-swatch::-webkit-color-swatch-wrapper{padding:0}
+.atom-color-swatch::-webkit-color-swatch{border:none;border-radius:50%}
+.atom-color-swatch::-moz-color-swatch{border:none;border-radius:50%}
+/* Tap target, not visual size — keeps the circle small while giving iOS the
+   44px it needs. */
+.atom-color-cell{min-width:44px;height:44px;text-align:center;vertical-align:middle}
 /* bond-table CSS removed — superseded by selection panel */
 /* MO LIST */
 #mo-list{width:100%;border-collapse:collapse;font-size:10px;cursor:pointer}
@@ -109,14 +210,14 @@ select{background:var(--panel2);border:1px solid var(--border);color:var(--txt);
 #progress-wrap{display:none;position:absolute;bottom:0;left:0;right:0;height:4px;background:#0a0a1a;z-index:20}
 #progress-bar{height:100%;background:var(--accent);width:0%;transition:width .3s}
 /* OVERLAY */
-#drop-overlay{position:absolute;inset:0;background:rgba(10,10,30,.85);display:flex;
+#drop-overlay{position:absolute;top:0;right:0;bottom:0;left:0;inset:0;background:rgba(10,10,30,.85);display:flex;
   flex-direction:column;align-items:center;justify-content:center;z-index:50;
   border:3px dashed var(--accent);border-radius:8px;pointer-events:none;opacity:0;transition:opacity .3s}
 #drop-overlay.show{opacity:1;pointer-events:all}
 #drop-overlay svg{width:60px;height:60px;opacity:.6;margin-bottom:16px}
 #drop-overlay p{color:var(--txt2);font-size:14px}
 /* LOADING */
-#loading{position:absolute;inset:0;background:rgba(10,10,30,.9);display:flex;
+#loading{position:absolute;top:0;right:0;bottom:0;left:0;inset:0;background:rgba(10,10,30,.9);display:flex;
   flex-direction:column;align-items:center;justify-content:center;z-index:100}
 #loading.hidden{display:none}
 #loading .spinner{width:48px;height:48px;border:4px solid var(--border);
@@ -133,7 +234,7 @@ select{background:var(--panel2);border:1px solid var(--border);color:var(--txt);
 .scheme-btn:hover,.scheme-btn.active{border-color:var(--accent)}
 .scheme-swatch{width:12px;height:12px;border-radius:50%;display:inline-block}
 /* WELCOME */
-#welcome{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+#welcome{position:absolute;top:0;right:0;bottom:0;left:0;inset:0;display:flex;align-items:center;justify-content:center;
   flex-direction:column;gap:16px;pointer-events:none;z-index:5}
 #welcome.hidden{display:none}
 #welcome-inner{background:var(--panel);border:1px solid var(--border);border-radius:12px;
@@ -145,7 +246,7 @@ select{background:var(--panel2);border:1px solid var(--border);color:var(--txt);
 .file-drop-area:hover{border-color:var(--accent)}
 .file-drop-area p{color:var(--txt2);font-size:13px;margin-top:8px}
 /* MODAL */
-#modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;
+#modal-bg{display:none;position:fixed;top:0;right:0;bottom:0;left:0;inset:0;background:rgba(0,0,0,.7);z-index:200;
   align-items:center;justify-content:center}
 #modal-bg.show{display:flex}
 #modal{background:var(--panel);border:1px solid var(--border);border-radius:10px;
@@ -176,7 +277,7 @@ select{background:var(--panel2);border:1px solid var(--border);color:var(--txt);
 <!-- TOOLBAR -->
 <header id="toolbar">
   <img src="data:image/png;base64,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" style="height:28px;width:auto;opacity:.9;margin-right:4px" alt="OpenMolcas" style="height:28px;width:auto;opacity:.9;margin-right:2px">
-  <span class="logo">Orbital Viewer <span style="color:var(--txt4)">· OpenMolcas</span></span>
+  <span class="logo">OrbViz <span style="color:var(--txt4)">· OpenMolcas</span></span><span id="ver-badge" title="OrbViz version"></span>
   <button class="btn primary" onclick="triggerFileOpen()">📂 <span class="btn-label">Open File</span></button>
   <input type="file" id="file-input" style="display:none">
   <button class="btn" onclick="saveState()">💾 <span class="btn-label">Save State</span></button>
@@ -213,7 +314,13 @@ select{background:var(--panel2);border:1px solid var(--border);color:var(--txt);
           </div>
           <div style="overflow-x:auto;max-height:200px;overflow-y:auto">
             <table id="atom-table">
-              <thead><tr><th>#</th><th>El</th><th>Color</th><th>R</th></tr></thead>
+              <!-- v0.59: the leading `#` column was DROPPED. The header
+                   declared 4 columns while every body row emitted 3, so every
+                   row was shifted one cell left (element under `#`, swatch
+                   under `El`, slider under `Color`) and `R` was always empty.
+                   `#` was also meaningless: these rows are one per UNIQUE
+                   ELEMENT, not per atom. Header and body are now both 3. -->
+              <thead><tr><th>El</th><th>Color</th><th>R</th></tr></thead>
               <tbody id="atom-table-body"></tbody>
             </table>
           </div>
@@ -285,7 +392,7 @@ select{background:var(--panel2);border:1px solid var(--border);color:var(--txt);
     <!-- Welcome screen -->
     <div id="welcome">
       <div id="welcome-inner">
-        <h2>⚛ Orbital Viewer</h2>
+        <h2>⚛ OrbViz</h2>
         <p>3D molecular orbital viewer for OpenMolcas output files.<br>
            Supports HDF5 (.h5) and Molden (.molden) formats.</p>
         <div class="file-drop-area" onclick="triggerFileOpen()">
@@ -486,8 +593,17 @@ select{background:var(--panel2);border:1px solid var(--border);color:var(--txt);
   <div id="modal">
     <h3 id="modal-title">Add Bond</h3>
     <div id="modal-body"></div>
+    <!-- v0.59: the hardcoded `Cancel` was REMOVED. showModal() has exactly one
+         live call site (Visualisation Standards), which passes 'Close' as the
+         OK label and closeModal as its handler — so both buttons did the same
+         thing, side by side. `Add Bond` in the title above is a leftover
+         default from a caller that no longer exists.
+         ONE button is kept, not zero: the per-row Apply buttons close the modal
+         as a side effect, so without this there would be no way to dismiss the
+         dialog without applying something. Backdrop tap and Escape both close
+         it too, but neither is discoverable, and neither is reachable by a
+         keyboard-only user tabbing through the trap. -->
     <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end">
-      <button class="hbtn" onclick="closeModal()">Cancel</button>
       <button class="hbtn primary" id="modal-ok">OK</button>
     </div>
   </div>
@@ -507,6 +623,94 @@ select{background:var(--panel2);border:1px solid var(--border);color:var(--txt);
 </script>
 
 <script>
+// ── Version ──────────────────────────────────────────────────────────────────
+// Bump this string every time a new fix or feature is deployed so that the
+// version is visible in the UI and written into every exported file's comment
+// line.  Format: v<major>.<minor>.  Pre-1.0 the major component is frozen at 0
+// and only the minor component increments, whether the change is a fix, a
+// feature or a UI change — v1.0 is reserved for the suite-wide first public
+// release.  The minor component is an unbounded counter: v0.99 is followed by
+// v0.100, not by v1.0.  See design_system.md → Version badge.
+//
+// v0.54: removed 6 Array.prototype.flatMap calls from the compute worker.
+// flatMap is ES2019 and is a *method*, so no parser rejects it — the worker
+// measured as ES2015 syntactically while being ES2019 at runtime
+// (Chrome 69 / Firefox 62 / Safari 12). See audit_check_render_gating.md §8.7.
+const ORBVIZ_VERSION = 'v0.62';
+
+// ── Render gating ────────────────────────────────────────────────────────────
+// See audit_check_render_gating.md. requestRender() marks the scene dirty; the
+// rAF loop in initThree() renders only when dirty, when a continuous hold is
+// active, or when RENDER_MAX_IDLE_MS has elapsed since the last frame.
+let _needsRender = true;
+let _lastRender  = 0;
+const RENDER_MAX_IDLE_MS = 500;
+function requestRender(){ _needsRender = true; }
+
+// ── Load generation — the Promise analogue of an abortable handle ────────────
+// audit_check_render_gating.md §8.10 requires that any in-flight loader-created
+// async resource be owned by disposeSession() rather than by the loader. OrbViz
+// has no such *handle* to own: its loaders await file.arrayBuffer() and
+// HDF5.open(), which are Promises, and a Promise cannot be aborted. §8.10's
+// greps therefore find nothing here — but the race they exist to prevent is
+// present all the same.
+//
+// loadFile() calls disposeSession() synchronously and then awaits four times.
+// Pick file B while file A is still parsing and A's continuation resumes after
+// B has already cleared the session, writing A's molecule into it. Whichever
+// parse finishes last wins, so which molecule ends up displayed depends on
+// relative parse time — a small Molden file picked after a large HDF5 one loses
+// to it. This is the same correctness race CSFsCalc v0.49 fixed with an identity
+// guard on its FileReader; with Promises the equivalent is a generation counter.
+//
+// disposeSession() increments it. Each loader snapshots it immediately after
+// and re-checks after every await; a superseded continuation returns instead of
+// writing. This also covers the catch path, so a failed superseded load cannot
+// toast an error over a successful newer one.
+let _loadGeneration = 0;
+
+// ── ES2017 floor helper ──────────────────────────────────────────────────────
+// Stand-in for the ?? operator, which is ES2020 and would raise this tool's
+// effective floor by three years (see design_system.md → Browser Support
+// Policy). NOT interchangeable with ||: several call sites below default a
+// value for which 0 or '' is legitimate — bond order 0, tessellation strength
+// 0.0, subscript digit 0 — and || would silently replace those with the
+// default. Both arguments are evaluated eagerly, which is safe here because
+// every default in this file is a literal or a plain property read.
+function _nn(v, dflt){ return (v === null || v === undefined) ? dflt : v; }
+
+// Continuous-mode hold, as a counter rather than a boolean so that overlapping
+// animations cannot cancel each other when one ends. OrbViz currently has no
+// timed scene animation — no frequency-mode playback, no optimisation
+// trajectory, no auto-spin — and its navigation helper is an explicit no-op
+// (APP.controls = {update:()=>{}}), so nothing acquires a hold today and the
+// counter stays at 0. It is installed regardless because it is the required
+// hook: any future playback feature must acquire on start and release on stop
+// AND on every cancel/error path, or gating will freeze it.
+let _continuousHolds = 0;
+function holdContinuousRender(){ _continuousHolds++; requestRender(); }
+function releaseContinuousRender(){
+  if (_continuousHolds > 0) _continuousHolds--;
+  requestRender();   // one final frame to settle the last state
+}
+
+// Catch-all trigger. Almost every OrbViz control is wired with an inline
+// oninput=/onchange=/onclick= attribute rather than an addEventListener call,
+// so enumerating them by hand would be ~30 edits with no way to prove none was
+// missed — and audit_check_render_gating.md §4 is explicit that the one real
+// risk of this change is a missed trigger. A single delegated capture-phase
+// listener covers every present and future control instead: contour and
+// tessellation sliders, colour and radius pickers, visibility checkboxes, MO
+// and state selection, panel collapse. Over-triggering costs one extra frame
+// per interaction, which is free; under-triggering costs correctness.
+//
+// The explicit requestRender() calls elsewhere are still required: pointer
+// drags, wheel zoom, resize and worker completions do not surface as
+// input/change/click events.
+['input','change','click'].forEach(function(evt){
+  document.addEventListener(evt, requestRender, true);
+});
+
 // =====================================================================
 // PLATFORM DETECTION
 // =====================================================================
@@ -514,6 +718,92 @@ const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 function applyFileInputAccept(inputId, acceptString) {
   if (!IS_IOS) { document.getElementById(inputId).setAttribute('accept', acceptString); }
+}
+
+// (The build number formerly declared here as '1.0' has been rolled back to a
+// pre-1.0 value and moved to the top of this script, next to the render-gating
+// state, so that there is a single obvious source of truth. v1.0 is reserved
+// for the suite-wide first public release — see design_system.md → The 1.0
+// reservation. It is now surfaced in the toolbar badge and written into the
+// SVG and saved-state exports.)
+
+// =====================================================================
+// iOS-SAFE FILE SAVING  (canonical pattern — design_system.md / ios_file_saving.md)
+// Device-proven on iPadOS 20 Jul 2026 (MolBuild v0.47), extended 21 Jul 2026
+// (MolViz v1.2). Every file this tool writes goes through _downloadBlob().
+// A bare <a download> anchor silently saves <uuid>.png on iPad.
+//   1. No `title:` in navigator.share()  → iOS saves a second `text NN.txt`.
+//   2. No prompt() before share()        → consumes the activation, NotAllowedError.
+//   3. No <a download> fallback on iOS   → saves <uuid> with a guessed/absent ext.
+//   4. MIME does not control the saved name on the share path; the File name wins.
+//   5. Never share an async payload from the callback that produced it if
+//      producing it can take seconds — stash and share from a fresh tap.
+//      canvas.toBlob() completes inside the tap and is exempt.
+// =====================================================================
+
+// The canonical _downloadBlob() below reports through toast(). OrbViz's notifier
+// is notify(msg, type, dur), so toast() is a thin shim over it. _downloadBlob's
+// only failure message begins with "Could not save" — route that one to the
+// error style so a refused share is never shown as a green success.
+function toast(msg, dur){
+  notify(msg, /^Could not save/.test(msg) ? 'err' : 'ok', dur || 3000);
+}
+
+// Ask for a filename — EXCEPT on iOS, where asking breaks the save (rule 2).
+// Returns null if the user cancelled (desktop only).
+// NOTE: OrbViz has never prompted for export filenames; it derives them from the
+// loaded file via exportFilename(). This helper is present for cross-tool parity
+// and is intentionally NOT called — adding a prompt would be a new behaviour.
+function _askFilename(label, ext, stem) {
+  stem = stem || 'molecule';
+  if (IS_IOS) return stem + '.' + ext;          // rename happens in the Save sheet
+  const raw = prompt(`Save ${label} as:`, stem);
+  if (raw === null) return null;
+  const s = raw.trim() || stem;
+  return s.endsWith('.' + ext) ? s : s + '.' + ext;
+}
+
+function _downloadBlob(blob, filename, mime, successMsg) {
+  // A null blob arrives here whenever a canvas.toBlob() encode fails — the API
+  // is specified to pass null rather than throw. Unguarded, desktop throws from
+  // URL.createObjectURL(null), and iOS does something worse: new File([null], …)
+  // succeeds and writes a 4-byte file containing the text "null", reported to
+  // the user as a success. Guard once here so every writer is covered,
+  // including ones added later. The "Could not save" prefix is load-bearing —
+  // in OrbViz literally so: toast() regex-tests /^Could not save/ to choose the
+  // 'err' style, because notify() takes the type as a separate argument.
+  if (!blob) {
+    toast(`Could not save ${filename} — the file could not be created`, 6000);
+    return;
+  }
+
+  const _anchorSave = () => {                   // desktop only — see rule 3
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    if (successMsg) toast(successMsg);
+  };
+
+  if (IS_IOS && navigator.canShare) {
+    const file = new File([blob], filename, { type: mime });
+    if (navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file] })         // NO title — rule 1
+        .then(() => { if (successMsg) toast(successMsg); })
+        .catch(err => {
+          if (err && err.name === 'AbortError') return;   // user cancelled
+          // No anchor fallback (rule 3) — report and point at a route that works.
+          toast(`Could not save ${filename} — iOS refused the share `
+                + `(${err && err.name}). OrbViz has no clipboard route for this file — `
+                + `re-run the export from a desktop browser.`, 6000);
+        });
+      return;
+    }
+  }
+  _anchorSave();
 }
 
 // ── Notebook preload injection points ─────────────────────────────────────────
@@ -689,7 +979,7 @@ function initBondControls(){
       const g=makeBondGroup(bd);
       APP.pivot.add(g); APP.bMeshes[bd.id]=g;
       APP.bondHitMeshes=Object.values(APP.bMeshes)
-        .flatMap(bg=>bg.children.filter(c=>c.userData.type==='bond-hit'));
+        .reduce((acc,bg)=>acc.concat(bg.children.filter(c=>c.userData.type==='bond-hit')),[]);
       updateSel();
     });
   });
@@ -704,6 +994,7 @@ function initBondControls(){
 
   // Delete key removes selected bond
   document.addEventListener('keydown',e=>{
+    if(_modalStack.length) return;   // never fire canvas shortcuts behind a modal
     if(e.key==='Delete'&&selBond!=null){
       APP.bondData=APP.bondData.filter(b=>b.id!==selBond);
       buildBondMeshes(); clearSel();
@@ -718,14 +1009,131 @@ function notify(msg,type='ok',dur=3000){
   document.getElementById('notif').appendChild(el);
   setTimeout(()=>el.remove(),dur);
 }
+// ── Modal accessibility manager ─────────────────────────────────────────────
+// Ported from molbuild.html rather than re-derived (design_system.md → Browser
+// Support Policy, "Known decisions taken under this policy"). OrbViz's one
+// backdrop modal is a plain <div>, deliberately: <dialog>/showModal() has a
+// hard floor of Firefox 98 / Safari 15.4 (both Mar 2022) and degrades
+// catastrophically below it — an unrecognised <dialog> gets no UA display:none,
+// so the panel would render inline and permanently visible, and .showModal()
+// throws TypeError. The three things <dialog> would have given us are supplied
+// by hand here: Escape-to-close, a Tab focus trap, and focus restore.
+//
+// Nothing below is newer than ES2015 + querySelectorAll + classList, all of
+// which this file and the bundled three.js r128 already require.
+//
+// OrbViz has a single modal, so the stack never exceeds depth 1 — it is kept as
+// a stack anyway so the manager stays byte-comparable with MolBuild's and can
+// absorb a second modal without being rewritten.
+
+const _MODAL_IDS = ['modal'];          // the panel, not the backdrop
+
+const _MODAL_CLOSERS = {
+  modal: () => closeModal(),
+};
+
+const _modalStack = [];        // open modal ids, innermost last
+const _modalReturnFocus = [];  // element to restore focus to, parallel to the above
+
+for (const id of _MODAL_IDS) {
+  const el = document.getElementById(id);
+  if (!el) continue;
+  el.setAttribute('role', 'dialog');
+  el.setAttribute('aria-modal', 'true');
+  el.setAttribute('tabindex', '-1');   // focusable as a container, not via Tab
+}
+
+// Tab-reachable descendants in DOM order. A static selector list plus explicit
+// filtering, rather than :not() chains or Element.matches(), so it stays
+// parseable on older engines.
+const _FOCUS_SEL = 'a[href],button,input,select,textarea,[tabindex]';
+function _focusablesIn(root) {
+  const out = [];
+  const all = root.querySelectorAll(_FOCUS_SEL);
+  for (let i = 0; i < all.length; i++) {
+    const el = all[i];
+    if (el.disabled) continue;
+    if (el.getAttribute('tabindex') === '-1') continue;
+    if (!el.offsetWidth && !el.offsetHeight) continue;  // display:none or hidden
+    out.push(el);
+  }
+  return out;
+}
+
+// Call immediately AFTER .show is added — the focusable scan needs layout.
+function _modalOpened(id) {
+  const box = document.getElementById(id);
+  if (!box || _modalStack.indexOf(id) !== -1) return;
+  _modalStack.push(id);
+  _modalReturnFocus.push(document.activeElement || null);
+  // {preventScroll:true} is HARDENING, not a fix for anything observed here.
+  // Ledger W21: the device test DISPROVED the preventScroll hypothesis; the
+  // real trigger was a numeric-type text input raising the iOS keyboard on an
+  // unscrollable body, and OrbViz has ZERO such inputs. ⚠ That input type is
+  // described here in words ON PURPOSE: written as a literal attribute, this
+  // comment matched a grep-based W21 audit and reported OrbViz as HAVING one.
+  // Same hazard as the license_header note about `grep -i copyright`. Applied for
+  // consistency with RassiViz v0.59. NOTE: preventScroll is NOT supported at
+  // the suite's Safari 14.1 floor -- WebKit shipped it in 15.4 (bug 178583).
+  // It is safe by graceful degradation (the options bag is ignored), not by
+  // floor coverage. Do not cite it as floor-supported.
+  box.focus({preventScroll:true});
+}
+
+// Call from the hide function, whichever way it was triggered (Cancel button,
+// backdrop click, or Escape).
+function _modalClosed(id) {
+  const i = _modalStack.indexOf(id);
+  if (i === -1) return;
+  _modalStack.splice(i, 1);
+  const prev = _modalReturnFocus.splice(i, 1)[0];
+  // document.contains() guards against restoring focus to a node that was
+  // re-rendered away while the modal was open.
+  if (prev && prev.focus && document.contains(prev)) prev.focus({preventScroll:true});
+}
+
+function _modalTop() {
+  if (!_modalStack.length) return null;
+  return document.getElementById(_modalStack[_modalStack.length - 1]);
+}
+
+// Escape and the Tab trap. Capture phase on document, so this runs before the
+// canvas keyboard shortcuts registered further down — those must not fire
+// behind an open modal (pressing "r" must not reset the camera while the
+// Add Bond panel is covering the viewport).
+document.addEventListener('keydown', e => {
+  const box = _modalTop();
+  if (!box) return;
+
+  if (e.key === 'Escape' || e.key === 'Esc') {   // 'Esc' for legacy Edge/IE
+    e.preventDefault();
+    e.stopPropagation();
+    const closer = _MODAL_CLOSERS[_modalStack[_modalStack.length - 1]];
+    if (closer) closer();
+    return;
+  }
+
+  if (e.key !== 'Tab') return;
+  const f = _focusablesIn(box);
+  if (!f.length) { e.preventDefault(); return; }
+  const first = f[0], last = f[f.length - 1];
+  if (!box.contains(document.activeElement)) { e.preventDefault(); first.focus({preventScroll:true}); return; }
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus({preventScroll:true}); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus({preventScroll:true}); }
+}, true);
+
 function showModal(title,body,okLabel,onOk){
   document.getElementById('modal-title').textContent=title;
   document.getElementById('modal-body').innerHTML=body;
   document.getElementById('modal-ok').textContent=okLabel||'OK';
   document.getElementById('modal-ok').onclick=onOk||closeModal;
   document.getElementById('modal-bg').classList.add('show');
+  _modalOpened('modal');   // after .show — the focusable scan needs layout
 }
-function closeModal(){document.getElementById('modal-bg').classList.remove('show')}
+function closeModal(){
+  document.getElementById('modal-bg').classList.remove('show');
+  _modalClosed('modal');
+}
 
 // =====================================================================
 // THREE.JS SETUP
@@ -773,9 +1181,27 @@ function initThree(){
   initTrackball();
   initBondControls();
 
-  // Single render pass — THREE.js handles transparent/opaque sorting correctly
+  // Gated rendering: render only when something changed, plus an unconditional
+  // render every RENDER_MAX_IDLE_MS as a safety net. The rAF loop keeps running
+  // unconditionally — only the body is gated — so no start/stop logic is
+  // introduced and a missed requestRender() costs at most half a second of
+  // staleness rather than a frozen viewport.
+  //
+  // This tool is an unusually strong candidate for gating: the loop body ran a
+  // per-triangle depth sort of every transparent isosurface group AND rebuilt
+  // ~9 Vector3 per multi-order bond, on every frame, even while the camera sat
+  // completely still — which for an orbital viewer is most of the session.
+  //
+  // Everything camera-dependent stays INSIDE the gate: the light rig tracks the
+  // camera, the multi-order bond lanes are camera-facing, and the transparency
+  // sort is by definition view-dependent. Hoisting any of them out would
+  // reintroduce the per-frame cost this removes.
   function animate(){
     APP.animFrame=requestAnimationFrame(animate);
+    const now=Date.now();
+    if(!_needsRender && !_continuousHolds && (now-_lastRender)<RENDER_MAX_IDLE_MS) return;
+    _needsRender=false;
+    _lastRender=now;
     if(APP.controls)APP.controls.update();
     APP.lightRig.quaternion.copy(APP.camera.quaternion); // keep lights camera-relative (design_system.md §2)
     updateBondOrientations();
@@ -784,13 +1210,21 @@ function initThree(){
   }
   animate();
   
-  // Resize
-  new ResizeObserver(()=>{
+  // Resize. ResizeObserver catches panel drags and layout changes that never
+  // fire a window resize event; the window listener is the fallback for
+  // browsers below the ResizeObserver floor, where the canvas would otherwise
+  // stay frozen at its initial size forever. Both paths are idempotent, so
+  // running both on a modern browser is harmless.
+  function resizeViewport(){
     const w=wrap.clientWidth,h=wrap.clientHeight;
+    if(!w||!h) return;
     APP.camera.aspect=w/h;
     APP.camera.updateProjectionMatrix();
     APP.renderer.setSize(w,h);
-  }).observe(wrap);
+    requestRender();
+  }
+  if(typeof ResizeObserver!=='undefined') new ResizeObserver(resizeViewport).observe(wrap);
+  window.addEventListener('resize', resizeViewport);
   
   // Drag & drop
   wrap.addEventListener('dragover',e=>{e.preventDefault();document.getElementById('drop-overlay').classList.add('show')});
@@ -897,7 +1331,7 @@ function initTrackball(){
   });
   canvas.addEventListener('contextmenu',e=>e.preventDefault());
 
-  window.addEventListener('mouseup',()=>{ rotating=false; panning=false; dragStart=null; });
+  window.addEventListener('mouseup',()=>{ rotating=false; panning=false; dragStart=null; requestRender(); });
 
   window.addEventListener('mousemove',e=>{
     if(!rotating&&!panning) return;
@@ -939,12 +1373,14 @@ function initTrackball(){
       APP.pivot.position.addScaledVector(right, dx*scale);
       APP.pivot.position.addScaledVector(up, -dy*scale);
     }
+    requestRender();
   });
 
   canvas.addEventListener('wheel',e=>{
     e.preventDefault();
     const factor=e.deltaY>0?1.12:1/1.12;
     APP.camera.position.multiplyScalar(factor);
+    requestRender();
   },{passive:false});
 
   // Touch
@@ -1023,8 +1459,13 @@ function initTrackball(){
       }
       lastMidX=midX; lastMidY=midY;
     }
+    requestRender();
   },{passive:false});
 
+  // Explicit no-op: navigation here is fully event-driven (no damping, no
+  // momentum, no polled state), which is why render gating needs no continuous
+  // hold for navigation — every camera change originates in a handler above and
+  // each of those calls requestRender(). See audit_check_render_gating.md §4.1.
   APP.controls={update:()=>{}};
 }
 
@@ -1290,8 +1731,8 @@ const HDF5 = (() => {
 
       const hdr=parseObjHeader(dv,bytes,objAddr);
       const shape=hdr.shape||[];
-      const dc=hdr.dtypeClass??1;
-      const ds=hdr.dtypeSize??8;
+      const dc=_nn(hdr.dtypeClass,1);
+      const ds=_nn(hdr.dtypeSize,8);
 
       let rawBuf;
 
@@ -1432,25 +1873,30 @@ document.getElementById('file-input').addEventListener('change',e=>{
 });
 
 async function loadFile(file){
-  disposeSession();
+  disposeSession();                     // increments _loadGeneration
+  const myGen = _loadGeneration;        // this load's identity
   setStatus(`Loading ${file.name}...`);
 
   // Detect format: HDF5 magic bytes = 0x89 H D F \r \n \x1a \n
   // Read first 8 bytes to check. Fallback: anything not-HDF5 is treated as Molden text.
   const isHDF5 = await detectHDF5(file);
+  if (myGen !== _loadGeneration) return;   // superseded by a newer load
   const fmt = isHDF5 ? 'HDF5' : 'Molden';
 
   showLoading(`Loading ${fmt} file...`, file.name);
   document.getElementById('welcome').classList.add('hidden');
   try{
     const buf=await file.arrayBuffer();
+    if (myGen !== _loadGeneration) return;
 
     let mol;
     if(isHDF5){
       showLoading('Parsing HDF5 structure...', file.name);
       const h5=await HDF5.open(buf);
+      if (myGen !== _loadGeneration) return;
       showLoading('Reading molecular data...','Reading datasets...');
       mol=await parseMolcasHDF5(h5);
+      if (myGen !== _loadGeneration) return;
     }else{
       showLoading('Parsing Molden file...', file.name);
       const text=new TextDecoder('utf-8',{fatal:false}).decode(buf);
@@ -1478,6 +1924,8 @@ async function loadFile(file){
     notify(`Loaded ${file.name} (${fmt})`, 'ok');
 
   }catch(err){
+    // A superseded load must not report its failure over a newer load's UI.
+    if (myGen !== _loadGeneration) return;
     hideLoading();
     setStatus('Error loading file: '+err.message);
     notify('Error: '+err.message,'err',8000);
@@ -1580,7 +2028,7 @@ async function parseMolcasHDF5(h5){
 
   // Spin multiplicity (root-level HDF5 attribute: SPINMULT = 2S+1)
   // 1 = singlet (S_0, S_1, ...), 3 = triplet (T_1, T_2, ...), etc.
-  mol.spinMult = h5.readRootAttr('SPINMULT') ?? 1;
+  mol.spinMult = _nn(h5.readRootAttr('SPINMULT'), 1);
 
   // Density matrices [nstates × nAct × nAct]
   const densRaw=await rd('DENSITY_MATRIX');
@@ -2105,6 +2553,22 @@ function disposeIsosurfaces(){
  * resets molecular state so the new file starts with a clean heap.
  */
 function disposeSession(){
+  // 0a. Invalidate any in-flight load. See _loadGeneration above: this is the
+  //     ownership §8.10 asks for, expressed as a generation counter because the
+  //     resource is a Promise chain rather than an abortable handle.
+  _loadGeneration++;
+
+  // 0b. Compute worker. initWorker() also terminates the previous worker, but
+  //    only on the success path; loadFile() calls disposeSession() first and
+  //    reaches initWorker() only if parsing succeeds. Without this, a failed
+  //    load leaves the previous worker alive holding its cached AO grid
+  //    (ngrid^3 x nbas doubles) in a heap the JS GC cannot reach. Both call
+  //    sites are idempotent, so terminating in both places is safe.
+  if(APP.worker){ APP.worker.terminate(); APP.worker=null; }
+  if(APP.workerBlobUrl){ URL.revokeObjectURL(APP.workerBlobUrl); APP.workerBlobUrl=null; }
+  APP.workerBusy=false;
+  APP.workerQueue=[];
+
   // 1. Isosurface meshes (orbitals, density, diff)
   disposeIsosurfaces();
 
@@ -2149,6 +2613,9 @@ function disposeSession(){
     contourEl.min='0.01';
     contourEl.step='0.005';
   }
+
+  // The scene has changed (everything was just removed from it).
+  requestRender();
 }
 
 // =====================================================================
@@ -2179,7 +2646,7 @@ function buildScene(){
   // Set camera distance based on molecule size
   let maxDist=0;
   mol.atoms.forEach(a=>{
-    const d=Math.sqrt((a.px-cx)**2+(a.py-cy)**2+(a.pz-cz)**2);
+    const d=Math.sqrt(Math.pow(a.px-cx,2)+Math.pow(a.py-cy,2)+Math.pow(a.pz-cz,2));
     if(d>maxDist)maxDist=d;
   });
   const molRadius=(maxDist+3)*BOHR2ANG;
@@ -2253,7 +2720,7 @@ function promoteAromaticBonds(atoms, bonds){
   atoms.forEach((a, i) => { atomById[i] = a; });
   const adj = {};
   atoms.forEach((a, i) => { adj[i] = new Set(); });
-  bonds.forEach(b => { adj[b.i]?.add(b.j); adj[b.j]?.add(b.i); });
+  bonds.forEach(b => { if(adj[b.i]) adj[b.i].add(b.j); if(adj[b.j]) adj[b.j].add(b.i); });
 
   // DFS ring finder — size 3-6 only; nb > start prevents duplicate rings
   const rings = [];
@@ -2276,7 +2743,7 @@ function promoteAromaticBonds(atoms, bonds){
   // Bond lookup
   const bondMap = {};
   bonds.forEach(b => { bondMap[b.i+'_'+b.j] = b; bondMap[b.j+'_'+b.i] = b; });
-  const getBond = (a, b) => bondMap[a+'_'+b] ?? null;
+  const getBond = (a, b) => _nn(bondMap[a+'_'+b], null);
 
   function isKekule(ring){
     const orders = [];
@@ -2291,7 +2758,7 @@ function promoteAromaticBonds(atoms, bonds){
   const promoted = new Set();
   for(const ring of rings){
     if(ring.length < 5 || ring.length > 6) continue;
-    if(!ring.every(id => AROMATIC_ELEMENTS.has(atomById[id]?.element))) continue;
+    if(!ring.every(id => atomById[id] ? AROMATIC_ELEMENTS.has(atomById[id].element) : false)) continue;
     if(!isKekule(ring)) continue;
     for(let k = 0; k < ring.length; k++){
       const bd = getBond(ring[k], ring[(k+1) % ring.length]);
@@ -2320,8 +2787,8 @@ function detectBonds(mol, options = {}){
       const dy = (ai.py - bi.py)*BOHR2ANG;
       const dz = (ai.pz - bi.pz)*BOHR2ANG;
       const d  = Math.sqrt(dx*dx + dy*dy + dz*dz);
-      const ri = COV_RADII[ai.element] ?? COV_RADII.DEFAULT;
-      const rj = COV_RADII[bi.element] ?? COV_RADII.DEFAULT;
+      const ri = _nn(COV_RADII[ai.element], COV_RADII.DEFAULT);
+      const rj = _nn(COV_RADII[bi.element], COV_RADII.DEFAULT);
       const rs = ri + rj;
       if(d > 0.4 && d < rs * bondTol){
         let order = 1;
@@ -2397,7 +2864,7 @@ function makeBondGroup(b){
   const aiPos=apos(b.i), ajPos=apos(b.j);
   const bondVec=new THREE.Vector3().subVectors(ajPos,aiPos);
   const len=bondVec.length(), bondDir=bondVec.clone().normalize();
-  const R=APP.bondRadius, o=b.order??1;
+  const R=APP.bondRadius, o=_nn(b.order,1);   // order 0 is meaningful — not ||
   const g=new THREE.Group();
   g.userData={type:'bond',id:b.id,ai:aiPos,aj:ajPos,order:o};
 
@@ -2527,11 +2994,18 @@ function buildAtomTable(){
   elems.forEach(el=>{
     const row=document.createElement('tr');
     const color=APP.atomColors[el]||ELEM_COLORS[el]||ELEM_COLORS.DEFAULT;
+    // A zero-valued colspan was REMOVED here (v0.59). ⚠ Written in words, not
+    // as the literal attribute: a grep for the malformed markup must not match
+    // this comment. Invalid HTML — the spec allows no such
+    // value and browsers clamp it to 1, so it spanned nothing while making the
+    // row look intentional. The row is now 3 cells against a 3-column header.
     row.innerHTML=`
-      <td class="el" colspan="0">${el}</td>
-      <td><span class="atom-color-swatch" data-el="${el}" style="background:${color}" onclick="openColorPicker('${el}')"></span></td>
+      <td class="el">${el}</td>
+      <td class="atom-color-cell"><input type="color" class="atom-color-swatch"
+          data-el="${el}" value="${_hex6(color)}" aria-label="${el} colour"
+          oninput="onAtomColorChange(this)"></td>
       <td>
-        <input type="range" min="0.3" max="2" step="0.1" value="${APP.atomRadii[el]||1.0}"
+        <input type="range" min="0.3" max="2" step="0.1" value="${_nn(APP.atomRadii[el],1.0)}"
           style="width:60px" data-el="${el}" class="atom-r-slider" oninput="onAtomRadiusChange(this)">
       </td>
     `;
@@ -2539,16 +3013,36 @@ function buildAtomTable(){
   });
 }
 
-function openColorPicker(el){
-  const input=document.createElement('input');
-  input.type='color';
-  input.value=APP.atomColors[el]||'#888888';
-  input.addEventListener('input',e=>{
-    APP.atomColors[el]=e.target.value;
-    updateAtomColors(el);
-    document.querySelectorAll(`[data-el="${el}"].atom-color-swatch`).forEach(s=>s.style.background=e.target.value);
+// input[type=color] accepts ONLY a 7-character lowercase #rrggbb value. Anything
+// else — a named colour, #rgb shorthand, rgb(), or a value carried in from a
+// saved state written by another tool — is silently coerced to #000000, which
+// would render every swatch black with no error anywhere. Normalise, and fall
+// back to the CPK colour rather than to black.
+function _hex6(c, fallback){
+  const s = String(_nn(c, '')).trim().toLowerCase();
+  if(/^#[0-9a-f]{6}$/.test(s)) return s;
+  if(/^#[0-9a-f]{3}$/.test(s)) return '#'+s[1]+s[1]+s[2]+s[2]+s[3]+s[3];
+  return _nn(fallback, ELEM_COLORS.DEFAULT);
+}
+
+// v0.59 — replaces openColorPicker(), which built a DETACHED input and called
+// .click() on it. That did nothing at all on iPad (device-confirmed). The
+// control is now a real input[type=color] in the table, so the picker opens
+// from the user's own gesture and there is no synthetic click to fail.
+//
+// It also fixes a quieter bug: the old picker opened on '#888888' whenever the
+// element had no user-set colour, so tapping a RED oxygen swatch presented a
+// GREY starting colour. The input now carries the displayed colour as its
+// value, so what you see is what the picker opens on.
+function onAtomColorChange(input){
+  const el=input.dataset.el;
+  APP.atomColors[el]=input.value;
+  updateAtomColors(el);
+  // Sibling swatches for the same element (if the table is ever rendered twice)
+  // must track the change; the input the user touched already shows it.
+  document.querySelectorAll(`input.atom-color-swatch[data-el="${el}"]`).forEach(s=>{
+    if(s!==input) s.value=input.value;
   });
-  input.click();
 }
 
 function onAtomRadiusChange(slider){
@@ -2744,9 +3238,9 @@ function buildDensityButtons(){
   // SPINMULT = 1 → singlet: S_0, S_1, ...  (ground state = S_0)
   // SPINMULT = 3 → triplet: T_1, T_2, ...  (ground state = T_1, T_0 doesn't exist)
   // Other         → generic: M1, M2, ...
-  const sm = mol.spinMult ?? 1;
+  const sm = _nn(mol.spinMult, 1);
   function stateLabel(s){
-    if(sm === 1) return 'S₀'.replace('0', '₀₁₂₃₄₅₆₇₈₉'[s]??s) || `S${s}`;
+    if(sm === 1) return 'S₀'.replace('0', _nn('₀₁₂₃₄₅₆₇₈₉'[s], s)) || `S${s}`;
     if(sm === 3) return `T${s+1}`;
     const prefix = sm === 5 ? 'Qu' : sm === 7 ? 'Se' : 'M';
     return `${prefix}${s+1}`;
@@ -2755,7 +3249,7 @@ function buildDensityButtons(){
   function singletLabel(s){
     const sub = ['₀','₁','₂','₃','₄','₅','₆','₇','₈','₉'];
     const n = String(s);
-    return 'S' + n.split('').map(c=>sub[+c]??c).join('');
+    return 'S' + n.split('').map(c=>_nn(sub[+c],c)).join('');
   }
   function label(s){
     if(sm===1) return singletLabel(s);
@@ -2797,7 +3291,7 @@ function updateMaterials(){
   
   const specColor=new THREE.Color(APP.specular/255,APP.specular/255,APP.specular/255);
   
-  const allBondMeshes=Object.values(APP.bMeshes).flatMap(g=>bondMeshList(g));
+  const allBondMeshes=Object.values(APP.bMeshes).reduce((acc,g)=>acc.concat(bondMeshList(g)),[]);
   [...APP.atomMeshes,...allBondMeshes].forEach(m=>{
     if(m.material){
       m.material.shininess=APP.shininess;
@@ -3294,7 +3788,7 @@ function computeSmoothNormals(verts, faceNorms){
     const tb=Math.floor(i/3)*9;
     const ax=verts[tb+3]-verts[tb],   ay=verts[tb+4]-verts[tb+1], az=verts[tb+5]-verts[tb+2];
     const bx=verts[tb+6]-verts[tb],   by=verts[tb+7]-verts[tb+1], bz=verts[tb+8]-verts[tb+2];
-    const area=Math.sqrt((ay*bz-az*by)**2+(az*bx-ax*bz)**2+(ax*by-ay*bx)**2)||1e-12;
+    const area=Math.sqrt(_sq(ay*bz-az*by)+_sq(az*bx-ax*bz)+_sq(ax*by-ay*bx))||1e-12;
     e.nx+=faceNorms[i*3]*area; e.ny+=faceNorms[i*3+1]*area; e.nz+=faceNorms[i*3+2]*area;
     e.idxs.push(i);
   }
@@ -3525,9 +4019,9 @@ function pnTessellate(verts, norms, level, strength){
 
     // Use average edge length for clamp — minimum edge can be near-zero for thin
     // triangles, eliminating all smoothing. Average is more representative.
-    const e01=Math.sqrt((p1x-p0x)**2+(p1y-p0y)**2+(p1z-p0z)**2);
-    const e12=Math.sqrt((p2x-p1x)**2+(p2y-p1y)**2+(p2z-p1z)**2);
-    const e20=Math.sqrt((p0x-p2x)**2+(p0y-p2y)**2+(p0z-p2z)**2);
+    const e01=Math.sqrt(_sq(p1x-p0x)+_sq(p1y-p0y)+_sq(p1z-p0z));
+    const e12=Math.sqrt(_sq(p2x-p1x)+_sq(p2y-p1y)+_sq(p2z-p1z));
+    const e20=Math.sqrt(_sq(p0x-p2x)+_sq(p0y-p2y)+_sq(p0z-p2z));
     const avgEdge=(e01+e12+e20)/3;
     // Clamp to 25% of average edge length
     const maxDisp=0.25*avgEdge;
@@ -3594,6 +4088,23 @@ function pnTessellate(verts, norms, level, strength){
 // WORKER MESSAGE HANDLER
 // -----------------------------------------------------------------------
 let aoGridCache=null;
+// ES2017 floor: ** is ES2016. _sq keeps a single evaluation of the operand,
+// which Math.pow(x,2) also does but less legibly in these hot tessellation
+// loops. See design_system.md -> Browser Support Policy.
+function _sq(x){return x*x;}
+// ES2017 floor: Array.prototype.flatMap is ES2019 (Chrome 69 / FF 62 / Safari 12)
+// and is a *method*, so no ecmaVersion rejects it — acorn reports this worker as
+// ES2015 while it is really ES2019 at runtime. See audit_check_render_gating.md
+// §8.7. Written as an explicit loop rather than reduce+concat, which is O(n^2)
+// on the component lists this is called with.
+function _flatMap(arr, fn){
+  const out=[];
+  for(let i=0;i<arr.length;i++){
+    const r=fn(arr[i]);
+    for(let j=0;j<r.length;j++) out.push(r[j]);
+  }
+  return out;
+}
 let basisData=null;
 let moVectors=null;
 let gridParams=null;
@@ -3643,8 +4154,8 @@ self.onmessage=function(e){
     // centroid-based depth sort uses a small-cell centroid rather than a whole-lobe
     // centroid. Fixes "banana around sphere" sorting failures for partial opacity.
     const VOXEL=2.0; // Bohr ≈ 1 Å
-    posComps=posComps.flatMap(c=>spatialSubdivide(c.v,c.n,VOXEL));
-    negComps=negComps.flatMap(c=>spatialSubdivide(c.v,c.n,VOXEL));
+    posComps=_flatMap(posComps,c=>spatialSubdivide(c.v,c.n,VOXEL));
+    negComps=_flatMap(negComps,c=>spatialSubdivide(c.v,c.n,VOXEL));
     const pp=packComponents(posComps), np=packComponents(negComps);
     const returnGrid=new Float32Array(moGrid).buffer;
     self.postMessage({
@@ -3677,8 +4188,8 @@ self.onmessage=function(e){
       negComps=negComps.map(c=>({v:c.verts,n:c.norms}));
     }
     const VOXEL=2.0;
-    posComps=posComps.flatMap(c=>spatialSubdivide(c.v,c.n,VOXEL));
-    negComps=negComps.flatMap(c=>spatialSubdivide(c.v,c.n,VOXEL));
+    posComps=_flatMap(posComps,c=>spatialSubdivide(c.v,c.n,VOXEL));
+    negComps=_flatMap(negComps,c=>spatialSubdivide(c.v,c.n,VOXEL));
     const pp=packComponents(posComps), np=packComponents(negComps);
     self.postMessage({
       type:'MO_DONE',moIdx,moGrid:moGridForCache.buffer,
@@ -3739,7 +4250,7 @@ self.onmessage=function(e){
       densComps=densComps.map(c=>pnTessellate(c.v,c.n,tessLevel,tessStrength));
       densComps=densComps.map(c=>({v:c.verts,n:c.norms}));
     }
-    densComps=densComps.flatMap(c=>spatialSubdivide(c.v,c.n,2.0));
+    densComps=_flatMap(densComps,c=>spatialSubdivide(c.v,c.n,2.0));
     const dp=packComponents(densComps);
     self.postMessage({
       type:'DENSITY_DONE',
@@ -3792,7 +4303,7 @@ self.onmessage=function(e){
         comps=comps.map(c=>pnTessellate(c.v,c.n,tessLevel,tessStrength));
         comps=comps.map(c=>({v:c.verts,n:c.norms}));
       }
-      comps=comps.flatMap(c=>spatialSubdivide(c.v,c.n,2.0));
+      comps=_flatMap(comps,c=>spatialSubdivide(c.v,c.n,2.0));
       return packComponents(comps);
     }
     const pp=processComps(posIso.verts,posIso.norms);
@@ -3820,6 +4331,9 @@ function initWorker(){
   
   APP.worker.onmessage=function(e){
     const{type,value,msg}=e.data;
+    // Every worker completion either adds, replaces or removes scene content,
+    // so mark dirty unconditionally rather than enumerating the message types.
+    requestRender();
     
     if(type==='PROGRESS'){
       setProgress(value);
@@ -4650,8 +5164,9 @@ function updateDiffFormula(){
   const sb=document.getElementById('diff-state-b');
   const el=document.getElementById('diff-formula');
   if(!el||!sa||!sb) return;
-  const labelA=sa.options[sa.selectedIndex]?.text||'A';
-  const labelB=sb.options[sb.selectedIndex]?.text||'B';
+  const optA=sa.options[sa.selectedIndex], optB=sb.options[sb.selectedIndex];
+  const labelA=(optA&&optA.text)||'A';
+  const labelB=(optB&&optB.text)||'B';
   el.textContent='Δρ = ρ('+labelA+') − ρ('+labelB+')';
 }
 
@@ -4801,11 +5316,12 @@ function exportPNG(){
   const out=renderCropped();
   const filename=exportFilename('png');
   out.toBlob(blob=>{
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url; a.download=filename; a.click();
-    setTimeout(()=>URL.revokeObjectURL(url),1000);
-    notify(`PNG exported: ${filename} (${out.width}×${out.height}px)`,'ok');
+    // toBlob passes null on encode failure. _downloadBlob guards this too, but
+    // its message is generic; naming the feature here tells the user what failed.
+    if(!blob){ toast('Could not save — could not encode the image'); return; }
+    // canvas.toBlob() completes inside the tap — rule 5 exempt, share directly.
+    _downloadBlob(blob, filename, 'image/png',
+      `PNG exported: ${filename} (${out.width}×${out.height}px)`);
   },'image/png');
 }
 
@@ -4816,12 +5332,16 @@ function exportSVG(){
   const out=renderCropped();
   const filename=exportFilename('svg');
   out.toBlob(blob=>{
+    // toBlob passes null on encode failure. Without this, readAsDataURL(null)
+    // throws before onload/onerror can report anything and the export dies mute.
+    if(!blob){ toast('Could not save — could not encode the image'); return; }
     const reader=new FileReader();
     reader.onload=()=>{
       const dataURI=reader.result; // data:image/png;base64,...
       const cw=out.width, ch=out.height;
       const svg=[
         `<?xml version="1.0" encoding="UTF-8"?>`,
+        `<!-- OrbViz ${ORBVIZ_VERSION} | OpenMolcas OPAL -->`,
         `<svg xmlns="http://www.w3.org/2000/svg"`,
         `     xmlns:xlink="http://www.w3.org/1999/xlink"`,
         `     width="${cw}" height="${ch}" viewBox="0 0 ${cw} ${ch}">`,
@@ -4832,14 +5352,46 @@ function exportSVG(){
         `</svg>`
       ].join('\n');
       const svgBlob=new Blob([svg],{type:'image/svg+xml;charset=utf-8'});
-      const url=URL.createObjectURL(svgBlob);
-      const a=document.createElement('a');
-      a.href=url; a.download=filename; a.click();
-      setTimeout(()=>URL.revokeObjectURL(url),1000);
-      notify(`SVG exported: ${filename} (${cw}×${ch}px)`,'ok');
+      // toBlob + FileReader on an already-rendered canvas completes inside the
+      // tap (same shape as MolViz's SVG path) — rule 5 exempt.
+      _downloadBlob(svgBlob, filename, 'image/svg+xml',
+        `SVG exported: ${filename} (${cw}×${ch}px)`);
+    };
+    reader.onerror=()=>{
+      // Without this the export fails silently: onload never fires, so
+      // _downloadBlob() is never reached and the user sees no feedback at all.
+      notify('SVG export failed: could not encode the rendered image','err',8000);
     };
     reader.readAsDataURL(blob);
   },'image/png');
+}
+
+// Order-sensitive fingerprint of the element sequence, as a 32-bit FNV-1a hash
+// in hex. A hash rather than the raw sequence on purpose: the literal string
+// for a large molecule would add tens of kilobytes to every saved state, and
+// the state file is already the largest thing this tool writes.
+//
+// ⚠ Collisions are possible in principle (32 bits). The CONSEQUENCE of one is
+// simply today's v0.58 behaviour — a wrong state accepted — never a crash, so
+// this degrades to the previous guard rather than to something worse.
+//
+// ⚠ ORDER-SENSITIVE, and that is a real limitation, not an oversight. The same
+// molecule read from a .molden and from an .h5 can enumerate atoms in different
+// orders, and those two will NOT match. The failure is conservative — a refusal
+// to restore bonds, with the appearance still applied — but a user who hits it
+// will reasonably think it is a bug. Recorded in the summary as a known limit.
+function _elemSignature(atoms){
+  let h=0x811c9dc5;                      // FNV-1a 32-bit offset basis
+  for(let i=0;i<atoms.length;i++){
+    const s=String(_nn(atoms[i] && atoms[i].element,'?'))+'|';
+    for(let k=0;k<s.length;k++){
+      h^=s.charCodeAt(k);
+      // >>> 0 after every step: JS bitwise ops yield SIGNED 32-bit, and the
+      // multiply overflows into the sign bit almost immediately.
+      h=Math.imul(h,0x01000193)>>>0;
+    }
+  }
+  return h.toString(16);
 }
 
 // =====================================================================
@@ -4848,8 +5400,22 @@ function exportSVG(){
 function saveState(){
   if(!APP.mol){notify('No molecule loaded','err');return}
   const state={
-    version:1,
+    version:2,                    // state-file schema version — BUMPED at v0.59
+    orbvizVersion:ORBVIZ_VERSION, // build that wrote the file (informational)
     timestamp:Date.now(),
+    // ── Molecule identity (v0.59, schema 2) ────────────────────────────────
+    // W3 shipped at v0.58 with a COUNT-only guard, which left a hole the device
+    // test walked straight into: restoring a 5-atom molecule's state onto a
+    // 40-atom one was ACCEPTED (every index was in range) and drew four bonds
+    // across a large molecule. Correct by the letter of the check, useless in
+    // practice.
+    //
+    // These two fields let applyState() require the state to have come from
+    // THIS molecule, not merely a compatible-sized one. Written unconditionally
+    // from v0.59; states lacking them are pre-v0.59 and fall back to the
+    // bounds check (see applyState).
+    nAtoms:APP.mol.atoms.length,
+    elemSig:_elemSignature(APP.mol.atoms),
     atomColors:APP.atomColors,
     atomRadii:APP.atomRadii,
     ballScale:APP.ballScale,
@@ -4879,34 +5445,113 @@ function saveState(){
   };
   const json=JSON.stringify(state,null,2);
   const blob=new Blob([json],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;a.download='molcas_state_'+Date.now()+'.json';a.click();
-  URL.revokeObjectURL(url);
-  notify('State saved','ok');
+  const filename='molcas_state_'+Date.now()+'.json';
+  _downloadBlob(blob, filename, 'application/json', 'State saved');
 }
 
 function loadState(){
   const input=document.createElement('input');
-  input.type='file';input.accept='.json';
+  input.type='file';
+  // Same rule as applyFileInputAccept(): an `accept` list greys files out in the
+  // iOS picker, so never set one there. This input is created at click time and
+  // has no markup id, so the guard is inlined rather than routed through the
+  // helper. The parse below is already try/catch, so an unparseable pick on iOS
+  // fails with a toast rather than a throw.
+  if(!IS_IOS) input.accept='.json';
   input.onchange=async e=>{
     try{
-      const text=await e.target.files[0].text();
+      const f = e.target.files && e.target.files[0];
+      if(!f){
+        // Previously this threw on files[0].text() and surfaced as a raw
+        // TypeError string. A cancelled or empty pick is not an error worth
+        // shouting about, but it must not look like success either.
+        notify('No state file selected','err');
+        return;
+      }
+      const gen=_loadGeneration;
+      const text=await f.text();
+      // A molecule load started while this JSON was being read supersedes it.
+      //
+      // ⚠ CORRECTED v0.62. This comment previously claimed a molecule load
+      // "has already cleared the session, so applying stale appearance state
+      // would resurrect the previous molecule's colours and radii." **That
+      // premise is false.** disposeSession() clears meshes, grids, APP.mol and
+      // Rydberg mode, but NEVER APP.atomColors, APP.atomRadii or APP.ballScale
+      // — appearance persists across molecule loads by omission (device-
+      // observed 22 Aug 2026: loading a different file left the previous
+      // colours, radii and multi-bond setting in place, so the load looked
+      // like it had done nothing).
+      //
+      // The guard is still correct, for a DIFFERENT reason: bondData is keyed
+      // by atom index, and applying it to a half-loaded document is exactly
+      // the W3 hazard. Appearance was never the risk it was documented as.
+      //
+      // ⚠ W37 (v0.61): this branch used to `return` SILENTLY. On 22 Aug 2026 a
+      // device test hit a state load that did nothing at all — no toast, no
+      // change — and this was the ONLY path in the function that can exit
+      // without saying anything, which made the report impossible to diagnose:
+      // "nothing happened" could equally have meant the handler never ran.
+      // It now reports. Whether this branch is what actually fired is STILL
+      // UNKNOWN and is the question the next device run answers.
+      if(gen!==_loadGeneration){
+        notify('State load cancelled — a molecule was loaded while the file was being read','err',6000);
+        return;
+      }
+      if(!text || !text.trim()){
+        notify('That state file is empty','err');
+        return;
+      }
       const state=JSON.parse(text);
       applyState(state);
-      notify('State loaded','ok');
-    }catch(err){notify('Failed to load state: '+err.message,'err')}
+      // ONE toast describing the whole outcome — see _bondsRejected. Showing a
+      // red rejection and a green success together (v0.58) told the user two
+      // contradictory things at once.
+      if(_bondsRejected){
+        notify('State was saved for a different molecule — appearance restored, bonds left unchanged','err',6000);
+      }else{
+        notify('State loaded','ok');
+      }
+    }catch(err){notify('Failed to load state: '+err.message,'err',6000)}
   };
+  // ⚠ Appended to the document before clicking. The KB's own `_anchorSave()`
+  // idiom does this, and W34 established that iOS treats an out-of-document
+  // input inconsistently — `type=color` did nothing at all there. This input
+  // HAS worked detached in earlier device tests, so this is belt-and-braces
+  // against one candidate cause of the W37 silent failure, NOT a diagnosis.
+  input.style.display='none';
+  document.body.appendChild(input);
   input.click();
+  // Not removed synchronously: the change event fires long after click() on
+  // iOS, and removing the input first can drop it.
+  setTimeout(()=>input.remove(), 60000);
 }
 
+// Set by applyState() when it declines to restore bondData, read by loadState()
+// so a single toast describes the whole outcome. Module-scoped rather than a
+// return value because applyState() is also reached from paths that ignore its
+// result; it is RESET on entry so a stale true can never leak into a later,
+// unrelated restore.
+let _bondsRejected = false;
+
 function applyState(state){
+  _bondsRejected = false;
+  // ⚠ W38 (v0.62). These were truthiness tests, which SILENTLY DISCARD a
+  // legitimate 0. That is not hypothetical here: the shipped 'CPK / spacefill'
+  // preset sets **bondRadius: 0.0**, so saving a state in CPK mode and
+  // restoring it quietly kept the previous bond radius and the molecule came
+  // back wrong — with no error, and looking plausible. `shininess: 0` (fully
+  // matte) and `specular: 0` (no highlight) are likewise legitimate.
+  //
+  // Note the surrounding lines already used `!= null` correctly; the file
+  // carried BOTH conventions side by side, which is how this survived. Same
+  // defect class as the suite-wide `??` must never become `||` rule.
+  // ⚠ Do not "tidy" these back to truthiness.
   if(state.atomColors)Object.assign(APP.atomColors,state.atomColors);
   if(state.atomRadii)Object.assign(APP.atomRadii,state.atomRadii);
-  if(state.ballScale)APP.ballScale=state.ballScale;
-  if(state.bondRadius)APP.bondRadius=state.bondRadius;
-  if(state.shininess)APP.shininess=state.shininess;
-  if(state.specular)APP.specular=state.specular;
+  if(state.ballScale!=null)APP.ballScale=state.ballScale;
+  if(state.bondRadius!=null)APP.bondRadius=state.bondRadius;
+  if(state.shininess!=null)APP.shininess=state.shininess;
+  if(state.specular!=null)APP.specular=state.specular;
 
   // Rydberg mode must be restored BEFORE the contour value is applied below,
   // since the slider's min/step need widening first or the browser will clamp
@@ -4923,6 +5568,11 @@ function applyState(state){
     if(APP.mol) initWorker();
   }
 
+  // `contour` left as a truthiness test DELIBERATELY: 0 is not a legal contour
+  // (the slider floor is 0.005 even in Rydberg mode) and a 0 here would render
+  // nothing at all, so rejecting it is correct rather than accidental.
+  // `gridQuality` is a non-empty string. Both documented so a future reader
+  // does not "fix" them to match the lines above.
   if(state.contour)APP.contour=state.contour;
   if(state.densContour!=null)APP.densContour=state.densContour;
   if(state.diffContour!=null)APP.diffContour=state.diffContour;
@@ -4933,7 +5583,77 @@ function applyState(state){
   if(state.densOpacity!=null)APP.densOpacity=state.densOpacity;
   if(state.diffOpacity!=null)APP.diffOpacity=state.diffOpacity;
   if(state.activeScheme!=null)APP.activeScheme=state.activeScheme;
-  if(state.bondData)APP.bondData=state.bondData;
+  // §8.13 (v0.57). Restored bond ids come from a PREVIOUS session's allocator,
+  // which also started at 0, while the live _bondIdC is untouched by this path.
+  // The two id ranges therefore straddle rather than nest, and the next
+  // bondNid() can mint an id a restored bond already holds. Both
+  // `APP.bondData.filter(b=>b.id!==selBond)` sites — btn-del-bond and the
+  // Delete-key handler — then remove TWO bonds. Execution-verified on v0.56
+  // (§8.11 profile `orbviz`, 8 Aug 2026): bondNid() returned 32 against
+  // restored ids [28..36], and one delete took a 10-bond list to 8.
+  //
+  // reduce, NOT Math.max(...arr): the spread throws RangeError on large inputs
+  // (executed 8 Aug 2026 in this session — Math.max(...) over 300k ids threw
+  // "RangeError: Maximum call stack size exceeded" where reduce returned
+  // correctly), and a saved state can carry one entry per bond of an
+  // arbitrarily large molecule.
+  // W3 (v0.58). Restored bondData is keyed by ATOM INDEX into the molecule it
+  // was saved from. Nothing previously checked those indices against the
+  // CURRENT document, so applying a larger molecule's state over a smaller one
+  // reached apos() -> APP.mol.atoms[idx].px on an undefined atom and threw.
+  //
+  // The throw was the lesser problem. It happened AFTER the assignment below,
+  // so the tool was left mid-mutation: foreign bondData installed, meshes
+  // partially rebuilt, clearSel() never reached, and loadState()'s catch
+  // surfaced the raw TypeError text as a toast. Validation therefore runs
+  // BEFORE the assignment, not after -- an all-or-nothing gate on this block.
+  //
+  // REJECT rather than filter (option A, Luca 16 Aug 2026). Restoring only the
+  // in-range subset would draw another molecule's partial connectivity over
+  // this one and LOOK like it worked -- the same silent-partial-restore shape
+  // as MolBuild's W4/W5, which stayed hidden for weeks. The rest of the state
+  // (colours, radii, contours, camera) still applies; only bonds are skipped.
+  //
+  // LIMIT, deliberately not addressed here: this catches COUNT mismatches
+  // only. A state saved from a DIFFERENT molecule with the same atom count
+  // restores cleanly and bonds the wrong atoms. saveState() records no
+  // molecule identity, so no in-file check can detect that. Tracked as the
+  // option-D follow-up (stamp an atom count / element signature into saved
+  // state and validate against it) -- a state FORMAT change, deferred.
+  if(state.bondData){
+    const _atoms  = (APP.mol && APP.mol.atoms) ? APP.mol.atoms : [];
+    const _nAtoms = _atoms.length;
+    let _reject = false;
+
+    if(state.nAtoms != null || state.elemSig != null){
+      // Schema 2+ (v0.59): the state carries molecule identity, so require it
+      // to match THIS molecule rather than merely fitting inside it.
+      _reject = (_nn(state.nAtoms, -1) !== _nAtoms) ||
+                (_nn(state.elemSig, null) !== _elemSignature(_atoms));
+    }else{
+      // Pre-v0.59 state: no identity recorded, so the v0.58 bounds check is the
+      // strongest guard available. ⚠ It cannot catch a same-size mismatch. Do
+      // NOT "simplify" this branch away — deleting it would make every state
+      // written before v0.59 unrestorable.
+      // _nn, not ||: index 0 is a legitimate atom index.
+      _reject = state.bondData.some(b=>{
+        const i=_nn(b && b.i, -1), j=_nn(b && b.j, -1);
+        return !(Number.isInteger(i) && i>=0 && i<_nAtoms &&
+                 Number.isInteger(j) && j>=0 && j<_nAtoms);
+      });
+    }
+
+    if(_reject){
+      // v0.59: the caller reports. At v0.58 this raised its own 'err' toast and
+      // loadState() then raised its own 'ok' toast, so the device test showed a
+      // RED failure and a GREEN success stacked together — contradictory, and
+      // the user could not tell what had actually happened.
+      _bondsRejected = true;
+    }else{
+      APP.bondData=state.bondData;
+      _bondIdC=APP.bondData.reduce((m,b)=>(_nn(b.id,0)>m?_nn(b.id,0):m),_bondIdC);
+    }
+  }
   
   // Apply slider values
   const set=(id,v)=>{const el=document.getElementById(id);if(el&&v!=null)el.value=v};
@@ -4962,7 +5682,7 @@ function applyState(state){
   if(document.getElementById('dens-contour-val')) document.getElementById('dens-contour-val').textContent=(state.densContour||0.004).toFixed(4);
   if(document.getElementById('diff-contour-val')) document.getElementById('diff-contour-val').textContent=(state.diffContour||0.002).toFixed(4);
   if(document.getElementById('tess-level-val')) document.getElementById('tess-level-val').textContent=(state.tessLevel||1);
-  if(document.getElementById('tess-strength-val')) document.getElementById('tess-strength-val').textContent=(state.tessStrength??0.0).toFixed(2);
+  if(document.getElementById('tess-strength-val')) document.getElementById('tess-strength-val').textContent=_nn(state.tessStrength,0.0).toFixed(2);
   document.getElementById('orb-opacity-val').textContent=(state.orbOpacity||0.7).toFixed(2);
   document.getElementById('dens-opacity-val').textContent=(state.densOpacity||0.5).toFixed(2);
   document.getElementById('diff-opacity-val').textContent=(state.diffOpacity||0.6).toFixed(2);
@@ -4973,6 +5693,17 @@ function applyState(state){
     buildAtomTable();
     buildColorSchemes();
     updateMaterials();
+    // §8.13 (v0.57). selBond holds an id minted from the PRE-restore bond set.
+    // This is the only path that replaces APP.bondData without going through
+    // buildScene(), which is where clearSel() otherwise runs, so without this
+    // the selection survives the restore and — since the id ranges overlap —
+    // silently designates a DIFFERENT bond. Execution-verified on v0.56:
+    // selBond=28 survived and resolved to restored bond {i:0,j:1}.
+    //
+    // Placed AFTER the rebuild, not at the bondData assignment: clearSel()
+    // calls updateSelHighlight(), which walks APP.atomMeshes and APP.bMeshes,
+    // and those are replaced by the two build* calls above.
+    clearSel();
   }
   
   if(state.cameraPos)APP.camera.position.set(...state.cameraPos);
@@ -5031,8 +5762,14 @@ document.addEventListener('DOMContentLoaded',()=>{
     document.getElementById('welcome').classList.remove('hidden');
   }
   
+  // Populate the toolbar version badge from the single source of truth, once, so
+  // that the constant and what the UI shows cannot drift apart.
+  const _verBadge=document.getElementById('ver-badge');
+  if(_verBadge) _verBadge.textContent=ORBVIZ_VERSION;
+
   // Press R to reset view
   window.addEventListener('keydown',e=>{
+    if(_modalStack.length) return;   // never fire canvas shortcuts behind a modal
     if(e.key==='r'||e.key==='R'){
       if(APP.mol){
         const mol=APP.mol;
@@ -5041,9 +5778,11 @@ document.addEventListener('DOMContentLoaded',()=>{
         APP.camera.position.set(0,0,(maxDist+5)*BOHR2ANG*3);
         APP.camera.quaternion.set(0,0,0,1);
         if(APP.pivot){APP.pivot.quaternion.set(0,0,0,1);APP.pivot.position.set(0,0,0);}
+        requestRender();
       }
     }
-    if(e.key==='Escape')closeModal();
+    // Escape is handled by the modal accessibility manager (capture phase),
+    // which also restores focus — it must not be duplicated here.
   });
 });
 </script>
