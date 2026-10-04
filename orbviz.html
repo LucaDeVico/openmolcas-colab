@@ -636,7 +636,7 @@ select{background:var(--panel2);border:1px solid var(--border);color:var(--txt);
 // flatMap is ES2019 and is a *method*, so no parser rejects it — the worker
 // measured as ES2015 syntactically while being ES2019 at runtime
 // (Chrome 69 / Firefox 62 / Safari 12). See audit_check_render_gating.md §8.7.
-const ORBVIZ_VERSION = 'v0.62';
+const ORBVIZ_VERSION = 'v0.63';
 
 // ── Render gating ────────────────────────────────────────────────────────────
 // See audit_check_render_gating.md. requestRender() marks the scene dirty; the
@@ -2714,7 +2714,7 @@ function apos(idx){
 
 // §6d — Aromatic ring promotion.
 // Finds 5/6-membered rings with Kekulé alternating bonds and promotes them to 1.5.
-// Adapted for molcas_viewer: atom id = array index (integer); uses atom.element.
+// Adapted for orbviz: atom id = array index (integer); uses atom.element.
 function promoteAromaticBonds(atoms, bonds){
   const atomById = {};
   atoms.forEach((a, i) => { atomById[i] = a; });
@@ -3339,7 +3339,7 @@ function gtoNorm(alpha, l, m){
   //   [All verified against ∫P_l(cosθ)^2 dΩ = 4π/(2l+1) and monomial formula]
   //
   // [FIX 2: f and g shells previously returned 1.0 (no normalization).
-  //  Documented in molcas_viewer_summary.md §9.]
+  //  Documented in orbviz_summary.md §9.]
   const p = Math.PI;
   // base_l = 2^(l+3/4) × α^(l/2+3/4) / π^(3/4)
   const base = Math.pow(2.0, l+0.75) * Math.pow(alpha, l*0.5+0.75) / Math.pow(p, 0.75);
@@ -4451,7 +4451,7 @@ function initWorker(){
 // minimal copy of the worker's gtoNorm() so the box-size estimate tracks
 // the actual rendered amplitude. If gtoNorm() inside WORKER_CODE is ever
 // revised (e.g. the pending d-shell m-dependent normalization fix noted
-// in molcas_viewer_summary.md §9), mirror the change here too. The angular
+// in orbviz_summary.md §9), mirror the change here too. The angular
 // part is approximated by r^l (the leading-order envelope along the
 // function's dominant axis) rather than the full solidHarmonic() table —
 // sufficient for sizing the box; the worker remains the sole source of
@@ -5307,7 +5307,7 @@ function renderCropped(){
 }
 
 function exportFilename(ext){
-  const base=APP.mol&&APP.mol.fileBase?APP.mol.fileBase:'molcas_viewer';
+  const base=APP.mol&&APP.mol.fileBase?APP.mol.fileBase:'orbviz';
   const moSuffix=APP.currentMO>=0?`_MO${APP.currentMO+1}`:'';
   return `${base}${moSuffix}.${ext}`;
 }
